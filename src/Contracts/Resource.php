@@ -1,0 +1,135 @@
+<?php
+
+namespace Actengage\Media\Contracts;
+
+use Actengage\Media\Media;
+
+interface Resource
+{
+    /**
+     * Initialize the resource.
+     *
+     * @param mixed $data
+     * @return void
+     */
+    public function initialize($data);
+
+    /**
+     * Get the model attributes.
+     *
+     * @return array
+     */
+    public function attributes(): array;
+
+    /**
+     * Set the `caption` property.
+     *
+     * @param string $value
+     * @return self
+     */
+    public function caption(string $value): self;
+
+    /**
+     * Set the `context` property.
+     *
+     * @param string $value
+     * @return self
+     */
+    public function context(string $value): self;
+
+    /**
+     * Set the `directory` property.
+     *
+     * @param string $value
+     * @return self
+     */
+    public function directory(string $value): self;
+
+    /**
+     * Set the `disk` property.
+     *
+     * @param string $value
+     * @return self
+     */
+    public function disk(string $value): self;
+
+    /**
+     * Set the `extension` property.
+     *
+     * @param string $value
+     * @return self
+     */
+    public function extension(string $value): self;
+
+    /**
+     * Set the `filename` property.
+     *
+     * @param string $value
+     * @return self
+     */
+    public function filename(string $value): self;
+
+    /**
+     * Set the `filesize` property.
+     *
+     * @param string $value
+     * @return self
+     */
+    public function filesize(string $value): self;
+
+    /**
+     * Set the `meta` property.
+     *
+     * @param array|string $key
+     * @param mixed $value
+     * @return self
+     */
+    public function meta(array|string $key, $value = null): self;
+
+    /**
+     * Set the `mime` property.
+     *
+     * @param string $value
+     * @return self
+     */
+    public function mime(string $value): self;
+
+    /**
+     * Store the resource on the disk.
+     *
+     * @param Media $model
+     * @return boolean
+     */
+    public function store(Media $model): bool;
+
+    /**
+     * Associate a parent model to the resource.
+     *
+     * @param Media|null $model
+     * @return self
+     */
+    public function parent(?Media $model): self;
+
+    /**
+     * Save the resource in the database.
+     *
+     * @return Media
+     */
+    public function save(): Media|bool;
+
+    /**
+     * Set the `tags` property.
+     *
+     * @param string[] ...$values
+     * @return self
+     */
+    public function tags(...$values): self;
+
+    /**
+     * Set the `title` property.
+     *
+     * @param string $value
+     * @return self
+     */
+    public function title(string $value): self;
+}

@@ -3,19 +3,22 @@
 namespace Actengage\Media\Resources;
 
 use Actengage\Media\Contracts\Resource as ResourceInterface;
-use Actengage\Media\Exceptions\UndefinedAttributeException;
-use Actengage\Media\Exceptions\UndefinedMethodException;
+use Actengage\Media\Facades\Resource as ResourceFactory;
 use Actengage\Media\Media;
 use Actengage\Media\Support\Attributes;
 use Actengage\Media\Support\HasEvents;
 use Actengage\Media\Support\HasPlugins;
+use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Traits\Macroable;
 
 abstract class Resource implements ResourceInterface
 {
-    use Attributes, HasEvents, HasPlugins {
+    use Attributes, HasEvents, HasPlugins, Macroable {
 		Attributes::__call as __callAttributes;
+        Macroable::__call as __callMacros;
+        Macroable::__callStatic as __callStaticMacros;
 	}
 
     /**
@@ -107,11 +110,14 @@ abstract class Resource implements ResourceInterface
      *
      * @param string $name
      * @param array $arguments
-     * @throws UndefinedMethodException
      * @return mixed
      */
     public function __call($name, $arguments)
     {
+        if(static::hasMacro($name)) {
+            return $this->__callMacros($name, $arguments);
+        }
+
         if(static::isObservableEvent($name)) {
             static::registerEvent($name, ...$arguments);
             
@@ -130,6 +136,10 @@ abstract class Resource implements ResourceInterface
      */
     public static function __callStatic($name, $arguments)
     {
+        if(static::hasMacro($name)) {
+            return static::__callStaticMacros($name, $arguments);
+        }
+
         static::registerEvent($name, ...$arguments);
     }
 
@@ -346,6 +356,22 @@ abstract class Resource implements ResourceInterface
         $this->tags = $this->tags->merge(
             (new Collection($values))->flatten(1)
         );
+
+        return $this;
+    }
+
+    /**
+     * Add a `when` callback resolver.
+     *
+     * @param array|string $key
+     * @param Closure $fn
+     * @return self
+     */
+    public function when(array|string $key, Closure $fn): self
+    {
+        if(ResourceFactory::is($this, $key)) {
+            call_user_func($fn, $this);
+        }
 
         return $this;
     }

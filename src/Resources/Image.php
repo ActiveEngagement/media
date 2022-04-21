@@ -2,9 +2,8 @@
 
 namespace Actengage\Media\Resources;
 
-use Actengage\Media\Exceptions\UndefinedMethodException;
 use Actengage\Media\Exceptions\InvalidResourceException;
-use Actengage\Media\Exceptions\UndefinedAttributeException;
+use Actengage\Media\Exceptions\BadAttributeException;
 use Actengage\Media\Media;
 use Actengage\Media\Support\ExifData;
 use ColorThief\ColorThief;
@@ -33,6 +32,7 @@ class Image extends Resource
      * Create an instance of the Image resource.
      *
      * @param mixed $data
+     * @throws InvalidResourceException
      * @return void
      */
     public function __construct(mixed $data = null)
@@ -59,7 +59,7 @@ class Image extends Resource
         try {
             return parent::__call($name, $arguments);
         }
-        catch(UndefinedAttributeException $e) {
+        catch(BadAttributeException $e) {
             call_user_func_array([$this->image, $name], $arguments);
         }        
 
@@ -151,33 +151,6 @@ class Image extends Resource
         return $this->image;
     }
     
-    /**
-     * Get the color palette of the image.
-     *
-     * @param integer $colorCount
-     * @param integer $quality
-     * @param array|null $area
-     * @param string $outputFormat
-     * @param \ColorThief\Image\Adapter\AdapterInterface|string|null $adapter 
-     * @return \Illuminate\Support\Collection
-     */
-    public function palette(
-        int $colorCount = 10,
-        int $quality = 10,
-        ?array $area = null,
-        string $outputFormat = 'obj',
-        $adapter = null
-    ): Collection {
-        return collect(ColorThief::getPalette(
-            $this->image->getCore(),
-            $colorCount,
-            $quality,
-            $area,
-            $outputFormat,
-            $adapter
-        ));
-    }
-
     /**
      * Store the resource on the disk.
      *

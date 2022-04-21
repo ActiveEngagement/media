@@ -2,14 +2,40 @@
 
 namespace Tests\Unit\Resources;
 
+use Actengage\Media\Contracts\Resource as ContractsResource;
 use Actengage\Media\Facades\Resource;
+use Actengage\Media\Resources\Image;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class ResourceTest extends TestCase
 {
+    public function testResourceIsImage()
+    {
+        $image = 0;
+        $file = 0;
+
+        Resource::path(__DIR__.'/../../src/image.jpeg')
+            ->when('image', function($resource) use (&$image) {
+                $this->assertInstanceOf(ContractsResource::class, $resource);
+                
+                $image++;
+            })
+            ->when('file', function() use ($file) {
+                $file++;
+            })
+            ->when(['image', 'file'], function($resource) use (&$image, &$file) {
+                $image++;
+                $file++;
+            });
+        
+        $this->assertEquals(2, $image);
+        $this->assertEquals(1, $file);
+    }
+
     public function testDatabaseAttributes()
     {
-        $resource = Resource::make(__DIR__.'/../../src/file.txt')
+        $resource = Resource::path(__DIR__.'/../../src/file.txt')
             ->disk($disk = 'public')
             ->directory($directory = 'a/b/c')
             ->context($context = 'testing')
@@ -44,7 +70,7 @@ class ResourceTest extends TestCase
 
     public function testChangeFilename()
     {
-        $model = Resource::make(__DIR__.'/../../src/file.txt')
+        $model = Resource::path(__DIR__.'/../../src/file.txt')
             ->filename('renamed.html')
             ->mime('plain/html')
             ->save();
@@ -56,7 +82,7 @@ class ResourceTest extends TestCase
     
     public function testChangeExtension()
     {
-        $model = Resource::make(__DIR__.'/../../src/file.txt')
+        $model = Resource::path(__DIR__.'/../../src/file.txt')
             ->extension('html')
             ->mime('plain/html')
             ->save();
@@ -68,7 +94,7 @@ class ResourceTest extends TestCase
 
     public function testChangeFilenameWithoutChanginTheExtension()
     {
-        $model = Resource::make(__DIR__.'/../../src/file.txt')
+        $model = Resource::path(__DIR__.'/../../src/file.txt')
             ->filename('renamed')
             ->save();
         
@@ -78,7 +104,7 @@ class ResourceTest extends TestCase
 
     public function testChangeExtensionWithoutChangingTheFilename()
     {
-        $model = Resource::make(__DIR__.'/../../src/file.txt')
+        $model = Resource::path(__DIR__.'/../../src/file.txt')
             ->extension('html')
             ->save();
         
@@ -88,11 +114,11 @@ class ResourceTest extends TestCase
 
     public function testParentAttribute()
     {
-        $parent = Resource::make(__DIR__.'/../../src/file.txt')
+        $parent = Resource::path(__DIR__.'/../../src/file.txt')
             ->filename('parent.txt')
             ->save();
         
-        $child = Resource::make(__DIR__.'/../../src/file.txt')
+        $child = Resource::path(__DIR__.'/../../src/file.txt')
             ->filename('child.txt')
             ->parent($parent)
             ->save();        
@@ -104,7 +130,7 @@ class ResourceTest extends TestCase
 
     public function testFormattedFilesizeAttribute()
     {
-        $model = Resource::make(__DIR__.'/../../src/index.html')->save();
+        $model = Resource::path(__DIR__.'/../../src/index.html')->save();
         
         $this->assertEquals('286 B', $model->size);
     }

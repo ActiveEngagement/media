@@ -49,5 +49,16 @@ class ServiceProvider extends BaseServiceProvider
         $this->publishes([
             __DIR__.'/../config/media.php' => config_path('media.php')
         ], 'config');
+
+        $this->bootPlugins($this->app->get(ResourceFactory::class));
+    }
+
+    protected function bootPlugins($factory)
+    {
+        foreach(Config::get('media.plugins', []) as $key => $plugins) {
+            if($resource = $factory->resource($key)) {
+                $resource::plugins($plugins);
+            }
+        }
     }
 }

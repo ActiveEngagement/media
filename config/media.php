@@ -10,17 +10,17 @@ return [
     'model' => Media::class,
 
     'resources' => [
-        Image::class,
-        File::class
+        'image' => Image::class,
+        'file' => File::class
     ],
     
     'plugins' => [
-        // Image::class => [
-        //     [ExtractImageColors::class, [
-        //         'colorCount' => 3,
-        //         'quality' => 10
-        //     ]]
-        // ]
+        'image' => [
+            [ExtractImageColors::class, [
+                'colorCount' => 3,
+                'quality' => 10
+            ]]
+        ]
     ]
 
 ];

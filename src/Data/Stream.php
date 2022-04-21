@@ -75,7 +75,7 @@ class Stream extends BaseStream
      *
      * @param mixed $subject
      * @param array $options
-     * @throws \Actengage\Media\Exceptions\NotReadableException
+     * @throws NotReadableException
      * @return static
      */
     public static function make($subject, array $options = []): static

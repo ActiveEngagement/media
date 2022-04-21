@@ -13,13 +13,6 @@ class ExtractImageColorsTest extends TestCase
 {
     public function testExtractImageColorsPlugin()
     {
-        Image::plugins([
-            [ExtractImageColors::class, [
-                'colorCount' => 3,
-                'quality' => 10
-            ]]
-        ]);
-
         $file = new UploadedFile(
             __DIR__.'/../../src/image.jpeg', 'image.jpeg'
         );

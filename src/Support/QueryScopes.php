@@ -130,18 +130,20 @@ trait QueryScopes {
      */
     public function scopeTag($query, ...$tags)
     {
-        $this->scopeTags($query, $tags);
+        $this->scopeTags($query, ...$tags);
     }
 
     /**
      * Add a query scope for the `tags` attribute.
      *
      * @param Illuminate\Database\Eloquent\Builder $query
-     * @param array $tags
+     * @param string|string[] $tags
      * @return void
      */
-    public function scopeTags($query, array $tags)
+    public function scopeTags($query, ...$tags)
     {
+        $tags = (new Collection($tags))->flatten();
+
         $query->where(function($q) use ($tags) {
             foreach($tags as $tag) {
                 $q->orWhereJsonContains('tags', $tag);
@@ -170,18 +172,20 @@ trait QueryScopes {
      */
     public function scopeWithoutTag($query, ...$tags)
     {
-        $this->scopeWithoutTags($query, $tags);
+        $this->scopeWithoutTags($query, ...$tags);
     }
 
     /**
      * Add a query scope without the `tags` attribute.
      *
      * @param Illuminate\Database\Eloquent\Builder $query
-     * @param array $tags
+     * @param string|string[] $tags
      * @return void
      */
-    public function scopeWithoutTags($query, array $tags)
+    public function scopeWithoutTags($query, ...$tags)
     {
+        $tags = (new Collection($tags))->flatten();
+
         $query->where(function($q) use ($tags) {
             foreach($tags as $tag) {
                 $q->orWhereJsonDoesntContain('tags', $tag);

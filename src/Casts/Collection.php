@@ -1,7 +1,9 @@
 <?php
  
 namespace Actengage\Media\Casts;
- 
+
+use Illuminate\Support\Collection as SupportCollection;
+
 class Collection extends Json
 {
     /**
@@ -15,6 +17,6 @@ class Collection extends Json
      */
     public function get($model, $key, $value, $attributes)
     {
-        return collect(parent::get($model, $key, $value, $attributes));
+        return new SupportCollection(parent::get($model, $key, $value, $attributes));
     }
 }

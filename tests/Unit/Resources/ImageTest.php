@@ -24,6 +24,7 @@ class ImageTest extends TestCase
             ->greyscale();
 
         $this->assertInstanceOf(Image::class, $resource);
+        $this->assertInstanceOf(\Intervention\Image\Image::class, $resource->image());
         $this->assertEquals(2933093, $resource->filesize);
         $this->assertEquals('image/jpeg', $resource->mime);
         $this->assertEquals('jpeg', $resource->extension);

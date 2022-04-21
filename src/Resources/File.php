@@ -21,6 +21,8 @@ class File extends Resource
      * Create an instance of the File resource.
      *
      * @param mixed $data
+     * @throws InvalidResourceException
+     * @return void
      */
     public function __construct(mixed $data)
     {
@@ -60,5 +62,15 @@ class File extends Resource
         return Storage::disk($model->disk)->writeStream(
             $model->relative_path, $this->stream->resource()
         );
+    }
+
+    /**
+     * Get the stream instance.
+     *
+     * @return Stream
+     */
+    public function stream(): Stream
+    {
+        return $this->stream;
     }
 }

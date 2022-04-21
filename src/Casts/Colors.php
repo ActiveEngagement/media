@@ -4,7 +4,8 @@ namespace Actengage\Media\Casts;
 
 use ColorThief\Color;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
- 
+use Illuminate\Support\Collection;
+
 class Colors implements CastsAttributes
 {
     /**
@@ -18,7 +19,7 @@ class Colors implements CastsAttributes
      */
     public function get($model, $key, $value, $attributes)
     {
-        return collect($value)->map(function($color) {
+        return (new Collection($value))->map(function($color) {
             return new Color(...$color);
         });
     }
@@ -34,6 +35,6 @@ class Colors implements CastsAttributes
      */
     public function set($model, $key, $value, $attributes)
     {
-        return collect($value)->map->getArray()->toArray();
+        return (new Collection($value))->map->getArray()->toArray();
     }
 }

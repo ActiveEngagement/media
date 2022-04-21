@@ -3,6 +3,7 @@
 namespace Actengage\Media\Contracts;
 
 use Actengage\Media\Media;
+use Closure;
 
 interface Resource
 {
@@ -132,4 +133,13 @@ interface Resource
      * @return self
      */
     public function title(string $value): self;
+
+    /**
+     * Add a `when` callback resolver.
+     *
+     * @param array|string $key
+     * @param Closure $fn
+     * @return self
+     */
+    public function when(array|string $key, Closure $fn): self;
 }

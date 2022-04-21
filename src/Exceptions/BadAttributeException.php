@@ -4,7 +4,7 @@ namespace Actengage\Media\Exceptions;
 
 use Error;
 
-class UndefinedAttributeException extends Error
+class BadAttributeException extends Error
 {
     public function __construct(string $class, string $attribute)
     {

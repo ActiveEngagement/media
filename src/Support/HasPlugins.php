@@ -2,6 +2,8 @@
 
 namespace Actengage\Media\Support;
 
+use Illuminate\Support\Collection;
+
 trait HasPlugins
 {
     /**
@@ -18,16 +20,13 @@ trait HasPlugins
      */
     public static function boot()
     {
-        collect(static::$plugins)
-            // ->filter(function($plugin) {
-            //     return !$plugin::$booted;
-            // })
+        (new Collection(static::$plugins))
             ->each(function($plugin) {
                 if(is_array($plugin)) {
                     [$plugin, $args] = $plugin;
                 }
 
-                $plugin::boot(collect(isset($args) ? $args : []));
+                $plugin::boot(new Collection(isset($args) ? $args : []));
             });
     }
 

@@ -2,7 +2,7 @@
 
 namespace Actengage\Media\Support;
 
-use Actengage\Media\Exceptions\UndefinedAttributeException;
+use Actengage\Media\Exceptions\BadAttributeException;
 
 trait Attributes
 {
@@ -38,13 +38,13 @@ trait Attributes
      * Get the attribute.
      *
      * @param string $key
-     * @throws UndefinedAttributeException
+     * @throws BadAttributeException
      * @return mixed
      */
     public function getAttribute(string $key): mixed
     {
         if(!property_exists($this, $key)) {
-            throw new UndefinedAttributeException(static::class, $key);
+            throw new BadAttributeException(static::class, $key);
         }
 
         return $this->$key;
@@ -55,13 +55,13 @@ trait Attributes
      *
      * @param string $key
      * @param mixed $value
-     * @throws UndefinedAttributeException
+     * @throws BadAttributeException
      * @return self
      */
     public function setAttribute(string $key, mixed $value): self
     {
         if(!property_exists($this, $key)) {
-            throw new UndefinedAttributeException(static::class, $key);
+            throw new BadAttributeException(static::class, $key);
         }
 
         $this->$key = $value;

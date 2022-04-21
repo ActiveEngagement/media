@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Resources;
 
+use Actengage\Media\Data\Stream;
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\Media;
 use Actengage\Media\Resources\File;
@@ -24,6 +25,7 @@ class FileTest extends TestCase
             ->directory('files');
 
         $this->assertInstanceOf(File::class, $resource);
+        $this->assertInstanceOf(Stream::class, $resource->stream());
         $this->assertEquals('txt', $resource->extension);
         $this->assertEquals('text/plain', $resource->mime);
         

@@ -35,7 +35,7 @@ class ExifData implements Arrayable, Jsonable {
             $data = $data->exif();
         }
 
-        $this->data = collect($data);
+        $this->data = new Collection($data);
     }
 
     /**

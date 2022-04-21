@@ -49,6 +49,10 @@ class ServiceProvider extends BaseServiceProvider
         $this->publishes([
             __DIR__.'/../config/media.php' => config_path('media.php')
         ], 'config');
+        
+        $this->publishes([
+            __DIR__.'/../database/migrations' => database_path('migrations')
+        ], 'migration');
 
         $this->bootPlugins($this->app->get(ResourceFactory::class));
     }

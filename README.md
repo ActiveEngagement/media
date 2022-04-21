@@ -1,6 +1,6 @@
 # Media
 
-This package provides a unit tested API to manage different types of files which can be related to Eloquent models (many to many relationships).
+This package provides a unit tested API to manage different types of files which can be related to Eloquent models (many to many relationships). Each type of file can be associated to its own resource for additional processing and manipulation. For instance, images are processed with the `Image` resource and manipulated with [Intervention Image](https://image.intervention.io/). API's are provides for creating your own resources.
 
 ### Features
 
@@ -10,18 +10,33 @@ This package provides a unit tested API to manage different types of files which
 - `Plugin` API which adds optional features, like color extraction for images.
 - Uses [File Storage](https://laravel.com/docs/9.x/filesystem) to manage files.
 - Uses [Intervention Image](https://image.intervention.io/) to manage and manipulate images.
+- Unit tested
   
-### Server Requirements
+## Requirements
 
 - Laravel 9.x+
 - PHP 8.x+
 - Intervention Image 2.x+
 - GD or Imagick
 
-## Installation
+## Getting Started
 
+*Install via composer*
+ 
 ```
 composer require actengage/media
+```
+
+*Publish the config file*
+
+```
+php artisan vendor:publish --tag=config
+```
+
+*Optional, publish the migration files*
+
+```
+php artisan vendor:publish --tag=config
 ```
 
 ## Resource Factory

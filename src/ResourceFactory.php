@@ -5,7 +5,7 @@ namespace Actengage\Media;
 use Actengage\Media\Contracts\Resource;
 use Actengage\Media\Exceptions\InvalidResourceException;
 
-class ResourceManager
+class ResourceFactory
 {
     /**
      * An array of resource classes.

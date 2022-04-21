@@ -2,13 +2,13 @@
 
 namespace Actengage\Media\Facades;
 
-use Actengage\Media\ResourceManager;
+use Actengage\Media\ResourceFactory;
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @method static \Actengage\Media\ResourceManager configure(array $resources = []) Configures available resources.
+ * @method static \Actengage\Media\ResourceFactory configure(array $resources = []) Configures available resources.
  * @method static \Actengage\Media\Contracts\Resource make($data) Instantiates a resource instance.
- * @see \Actengage\Media\ResourceManager
+ * @see \Actengage\Media\ResourceFactory
  */
 class Resource extends Facade
 {
@@ -19,6 +19,6 @@ class Resource extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return ResourceManager::class;
+        return ResourceFactory::class;
     }
 }

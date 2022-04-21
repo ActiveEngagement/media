@@ -22,11 +22,11 @@ class ServiceProvider extends BaseServiceProvider
 
         Resource::setEventDispatcher(new Dispatcher());
 
-        $this->app->singleton(ResourceManager::class, function() {
-            return new ResourceManager();
+        $this->app->singleton(ResourceFactory::class, function() {
+            return new ResourceFactory();
         });
 
-        $this->app->get(ResourceManager::class)->configure(
+        $this->app->get(ResourceFactory::class)->configure(
             Config::get('media.resources')
         );
 

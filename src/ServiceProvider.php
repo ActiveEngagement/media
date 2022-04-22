@@ -22,6 +22,10 @@ class ServiceProvider extends BaseServiceProvider
 
         Resource::setEventDispatcher(new Dispatcher());
 
+        $this->app->singleton(PluginFactory::class, function($app) {
+            return new PluginFactory($app);
+        });
+
         $this->app->singleton(ResourceFactory::class, function() {
             return new ResourceFactory();
         });
@@ -54,11 +58,14 @@ class ServiceProvider extends BaseServiceProvider
             __DIR__.'/../database/migrations' => database_path('migrations')
         ], 'migration');
 
-        $this->bootPlugins($this->app->get(ResourceFactory::class));
+        $this->app->get(PluginFactory::class)->boot();
+        // $this->bootPlugins($this->app->get(ResourceFactory::class));
     }
 
     protected function bootPlugins($factory)
     {
+        dd(Config::get('media.plugins', []));
+
         foreach(Config::get('media.plugins', []) as $key => $plugins) {
             if($resource = $factory->resource($key)) {
                 $resource::plugins($plugins);

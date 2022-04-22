@@ -21,7 +21,9 @@ trait HasEvents
      *
      * @var array
      */
-    protected static array $observables = ['creating', 'created'];
+    protected static array $observables = [
+        'initialized', 'creating', 'created'
+    ];
     
     /**
      * Fire the given event for the resource.

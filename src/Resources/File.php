@@ -27,24 +27,24 @@ class File extends Resource
     public function __construct(mixed $data)
     {
         try {
-            $this->initialize($data);
+            $this->stream = Stream::make($data);
         }
         catch(NotReadableException $e) {
             throw new InvalidResourceException(
                 $e->getMessage(), $e->getCode(), $e
             );
         }
+
+        parent::__construct();
     }
 
     /**
      * Initialize the resource.
      *
-     * @param mixed $data
      * @return void
      */
-    public function initialize($data)
+    public function initialize()
     {
-        $this->stream = Stream::make($data);
         $this->extension = $this->stream->extension();
         $this->filename = $this->stream->filename();
         $this->filesize = $this->stream->getSize();

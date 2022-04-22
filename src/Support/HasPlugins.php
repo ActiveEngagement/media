@@ -7,11 +7,32 @@ use Illuminate\Support\Collection;
 trait HasPlugins
 {
     /**
+     * The resource plugin instances.
+     *
+     * @var Collection
+     */
+    protected Collection $pluginInstances;
+
+    /**
      * The available plugins.
      *
      * @var array
      */
     protected static array $plugins = [];
+
+    /**
+     * Resolve the plugin instance method.
+     *
+     * @param string $method
+     * @param mixed ...$args
+     * @return self
+     */
+    public function resolvePluginMethod(string $method, ...$args): self
+    {
+        $this->pluginInstances->map->$method($this, ...$args);
+
+        return $this;
+    }
 
     /**
      * Boot the plugins.
@@ -22,11 +43,13 @@ trait HasPlugins
     {
         (new Collection(static::$plugins))
             ->each(function($plugin) {
-                if(is_array($plugin)) {
-                    [$plugin, $args] = $plugin;
+                if(!is_array($plugin)) {
+                    $plugin = [$plugin, []];
                 }
 
-                $plugin::boot(new Collection(isset($args) ? $args : []));
+                [ $class, $args ] = $plugin;
+
+                $class::boot(new Collection(isset($args) ? $args : []));
             });
     }
 
@@ -87,10 +110,20 @@ trait HasPlugins
      * @param array|mixed $plugins
      * @return void
      */
-    public static function removePlugins($plugins)
+    public static function removePlugins(array $plugins = [])
     {
         static::setPlugins(array_diff(
             static::$plugins, is_array($plugins) ? $plugins : func_get_args()
         ));
+    }
+
+    /**
+     * Reset plugins to original state.
+     *
+     * @return void
+     */
+    public static function flushPlugins()
+    {
+        static::$plugins = [];
     }
 }

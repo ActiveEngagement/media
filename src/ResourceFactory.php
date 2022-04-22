@@ -60,6 +60,7 @@ class ResourceFactory
      * Instantiates a resource instance.
      *
      * @param mixed $data
+     * @throws InvalidResourceException
      * @return \Actengage\Media\Contracts\Resource
      */
     public function make($data): Resource
@@ -84,9 +85,9 @@ class ResourceFactory
      * @param string $filename
      * @return \Actengage\Media\Contracts\Resource
      */
-    public function path(string $path, string $filename = null)
+    public function path(string $path)
     {
-        return $this->make($path)->filename($filename ?? basename($path));
+        return $this->make($path);
     }
 
     /**
@@ -101,7 +102,7 @@ class ResourceFactory
     }
 
     /**
-     * Get the factory resource by key.
+     * Get the resource by key.
      *
      * @param string $key
      * @return string|null
@@ -116,7 +117,7 @@ class ResourceFactory
     }
 
     /**
-     * Get the factory resources.
+     * Get the registered resources.
      *
      * @return array
      */

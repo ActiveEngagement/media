@@ -2,7 +2,9 @@
 
 namespace Actengage\Media\Resources;
 
+use Actengage\Media\Contracts\Plugin as PluginInterface;
 use Actengage\Media\Contracts\Resource as ResourceInterface;
+use Actengage\Media\Facades\Plugin;
 use Actengage\Media\Facades\Resource as ResourceFactory;
 use Actengage\Media\Media;
 use Actengage\Media\Support\Attributes;
@@ -104,6 +106,19 @@ abstract class Resource implements ResourceInterface
      * @var string|null
      */
     public ?string $title = null;
+
+    /**
+     * Create a new resource instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {        
+        $this->pluginInstances = Plugin::initialize($this);
+        $this->initialize();
+        $this->fireEvent('initialized');
+        $this->resolvePluginMethod('initialized');
+    }
 
     /**
      * Bind events to the dispatcher if the method doesn't exist.
@@ -330,12 +345,13 @@ abstract class Resource implements ResourceInterface
             }
 
             $this->fireEvent('creating', $model);
-            
+            $this->resolvePluginMethod('creating', $model);
             $this->store($model);
 
             $model->save();
 
             $this->fireEvent('created', $model);
+            $this->resolvePluginMethod('created', $model);
 
             return $model;
         });

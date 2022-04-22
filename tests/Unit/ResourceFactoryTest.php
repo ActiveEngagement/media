@@ -42,14 +42,4 @@ class ResourceFactoryTest extends TestCase
         $this->assertInstanceOf(Image::class, $resource);
         $this->assertEquals('image.jpeg', $resource->filename);
     }
-
-    public function testCreateFromPathAndFilename()
-    {
-        $resource = Resource::path(
-            __DIR__.'/../src/image.jpeg', 'test.jpeg'
-        );
-
-        $this->assertInstanceOf(Image::class, $resource);
-        $this->assertEquals('test.jpeg', $resource->filename);
-    }
 }

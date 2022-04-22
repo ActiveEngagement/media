@@ -7,7 +7,6 @@ use Actengage\Media\Exceptions\BadAttributeException;
 use Actengage\Media\Media;
 use Actengage\Media\Support\ExifData;
 use ColorThief\ColorThief;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\ImageManagerStatic;
@@ -38,13 +37,15 @@ class Image extends Resource
     public function __construct(mixed $data = null)
     {
         try {
-            $this->initialize($data);
+            $this->image = ImageManagerStatic::make($data);
         } 
         catch(NotReadableException $e) {
             throw new InvalidResourceException(
                 $e->getMessage(), $e->getCode(), $e
             );
         }
+            
+        parent::__construct();
     }
 
     /**
@@ -69,12 +70,10 @@ class Image extends Resource
     /**
      * Initialize the resource.
      *
-     * @param mixed $data
      * @return void
      */
-    public function initialize($data)
+    public function initialize()
     {
-        $this->image = ImageManagerStatic::make($data);
         $this->extension = $this->image->extension;
         $this->filename = basename($this->image->basePath());
         $this->filesize = $this->image->filesize();

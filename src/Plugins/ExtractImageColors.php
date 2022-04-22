@@ -7,8 +7,8 @@ use Actengage\Media\Resources\Image;
 use ColorThief\ColorThief;
 use Illuminate\Support\Collection;
 
-class ExtractImageColors extends Plugin {
-
+class ExtractImageColors extends Plugin
+{
     /**
      * Boot the plugin.
      *

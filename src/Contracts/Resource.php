@@ -10,10 +10,9 @@ interface Resource
     /**
      * Initialize the resource.
      *
-     * @param mixed $data
      * @return void
      */
-    public function initialize($data);
+    public function initialize();
 
     /**
      * Get the model attributes.

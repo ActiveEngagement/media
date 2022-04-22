@@ -47,15 +47,13 @@ The resource factory provides a unified interface for creating a variety of reso
 use Actengage\Media\Facades\Resource;
 use Illuminate\Http\UploadedFile;
 
-// Create a resource from a path. The second argument allows you to
-// a custom filename. If no argument is given, the basename() of the path
-// is used.
-$resource = Resource::path('some/file/path/image.jpeg', 'renamed.jpeg');
+// Create a resource from a path.
+$resource = Resource::path('some/file/path/image.jpeg');
 
 // Create a resource from request() instance.
 $resource = Resource::request('image');
 
-// Create a resource from an UploadedFile instance.
+// Create a resource from an \Illuminate\Http\UploadedFile instance.
 $resource = Resource::make(
     new UploadedFile('some/file/path/image.jpeg', 'image.jpeg')
 );
@@ -290,24 +288,36 @@ Plugins are used to add additional functionality to resources not provided by th
 
 use Actengage\Media\Media;
 use Actengage\Media\Plugins\ExtractImageColors;
+use Actengage\Media\Plugins\HashDirectory;
+use Actengage\Media\Plugins\HashFilename;
 use Actengage\Media\Resources\File;
 use Actengage\Media\Resources\Image;
 
 return [
 
-    // ....
+    // Resources are defined in key/value pairs. The key is the common name
+    // and the value is the class. Plugins are matched to their common name.
+    'resources' => [
+        'image' => Image::class,
+        'file' => File::class
+    ],
     
     'plugins' => [
+        // This plugins will apply to all resources and has no options.
+        HashFilename::class,
+
+        // These plugins will only apply to image resources
         'image' => [
-            // This is how to define a plugin with some options.
+            // This plugin has some options
             [ExtractImageColors::class, [
                 'colorCount' => 3,
                 'quality' => 10
             ]],
         ],
+
+        // These plugins will only apply to file resources
         'file' => [
-            // This is how to define a plugin without options
-            SomePluginWithoutOptionsGoesHere::class
+            HashDirectory::class
         ]
     ]
 

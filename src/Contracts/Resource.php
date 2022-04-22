@@ -5,9 +5,6 @@ namespace Actengage\Media\Contracts;
 use Actengage\Media\Media;
 use Closure;
 
-/**
- * @property static array $plugins
- */
 interface Resource
 {
     /**

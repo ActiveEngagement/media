@@ -14,18 +14,11 @@ trait HasPlugins
     protected Collection $pluginInstances;
 
     /**
-     * The available plugins.
-     *
-     * @var array
-     */
-    protected static array $plugins = [];
-
-    /**
      * Resolve the plugin instance method.
      *
      * @param string $method
      * @param mixed ...$args
-     * @return self
+     * @return void
      */
     public function resolvePluginMethod(string $method, ...$args): self
     {

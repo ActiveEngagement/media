@@ -2,7 +2,6 @@
 
 namespace Actengage\Media\Resources;
 
-use Actengage\Media\Contracts\Plugin as PluginInterface;
 use Actengage\Media\Contracts\Resource as ResourceInterface;
 use Actengage\Media\Facades\Plugin;
 use Actengage\Media\Facades\Resource as ResourceFactory;
@@ -346,6 +345,7 @@ abstract class Resource implements ResourceInterface
 
             $this->fireEvent('creating', $model);
             $this->resolvePluginMethod('creating', $model);
+
             $this->store($model);
 
             $model->save();

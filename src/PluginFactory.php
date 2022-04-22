@@ -3,6 +3,7 @@
 namespace Actengage\Media;
 
 use Actengage\Media\Contracts\Resource;
+use Actengage\Media\Resources\File;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;

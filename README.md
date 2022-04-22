@@ -279,7 +279,27 @@ dd($document->medium);
 
 ## Plugins
 
-Plugins are used to add additional functionality to resources not provided by the core API's. This is an example of the `ExtractImageColors` plugin that extracts the common colors from an image and stores them in the model. A plugin consists of a `Plugin` class and is defined in the `media.config`
+Plugins are used to add additional functionality to resources not provided by the core API's. This is an example of the `ExtractImageColors` plugin that extracts the common colors from an image and stores them in the model. A plugin has instance methods which apply to the specific resource that is being manipulated. Or as event handlers.
+
+A `Plugin` class can be used in one of two ways. The first way is to bind it statically to the resource it should be used with. The second way is by defining it in the `config/media.php` file. In the config, plugins can be bound to specific resources or globally for all resources.
+
+*Static Binding*
+
+```php
+use Actengage\Media\Resources\Image;
+
+// These plugins will only fire on Image resources.
+Image::plugins([
+    // This is a plugin without any options defined.
+    HashFilename::class,
+
+    // This is a plugin with options defined.
+    [ExtractImageColors::class, [
+        'colorCount' => 3,
+        'quality' => 10
+    ]],
+]);
+```
 
 *config/media.php*
 

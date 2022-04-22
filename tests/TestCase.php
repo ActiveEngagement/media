@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Actengage\Media\Facades\Media;
+use Actengage\Media\Facades\Plugin;
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\Resources\Image;
 use Illuminate\Support\Facades\Storage;
@@ -27,7 +28,7 @@ class TestCase extends BaseTestCase
         Storage::fake('s3');
         Storage::fake('public');
 
-        Image::flushPlugins();
+        Plugin::flush();
     }
 
     /**

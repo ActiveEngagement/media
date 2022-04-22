@@ -113,7 +113,7 @@ abstract class Resource implements ResourceInterface
      */
     public function __construct()
     {        
-        $this->pluginInstances = Plugin::initialize($this);
+        $this->plugins = Plugin::initialize($this);
         $this->initialize();
         $this->fireEvent('initialized');
         $this->resolvePluginMethod('initialized');

@@ -4,6 +4,7 @@ namespace Actengage\Media;
 
 use Actengage\Media\Contracts\Resource;
 use Actengage\Media\Exceptions\InvalidResourceException;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Arr;
 
 class ResourceFactory
@@ -20,13 +21,13 @@ class ResourceFactory
      *
      * @param array $config
      */
-    public function __construct(array $resources = [])
+    public function __construct(Application $app)
     {
-        $this->configure($resources);
+        $this->configure($app->config['media.resources']);
     }
 
     /**
-     * Configures available resources.
+     * Configure the resources.
      *
      * @param array $resources
      * @return self
@@ -105,15 +106,15 @@ class ResourceFactory
      * Get the resource by key.
      *
      * @param string $key
-     * @return string|null
+     * @return string
      */
-    public function resource(string $key): ?string
+    public function resource(string $key): string
     {
         if(is_a($key, Resource::class, true)) {
             return $key;
         }
 
-        return Arr::get($this->resources(), $key);
+        return Arr::get($this->resources(), $key, $key);
     }
 
     /**

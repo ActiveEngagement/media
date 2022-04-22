@@ -12,7 +12,7 @@ class HashFilenameTest extends TestCase
 {
     public function testHashFilename()
     {
-        Image::plugins([
+        Image::register([
             [HashFilename::class, [
                 'length' => 8
             ]]

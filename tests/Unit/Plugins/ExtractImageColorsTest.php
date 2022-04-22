@@ -12,7 +12,7 @@ class ExtractImageColorsTest extends TestCase
 {
     public function testExtractImageColorsPlugin()
     {
-        Image::plugins([
+        Image::register([
             [ExtractImageColors::class, [
                 'colorCount' => 3,
                 'quality' => 10

@@ -17,7 +17,7 @@ class ResourceFactoryTest extends TestCase
 
         $this->assertEquals(Image::class, Resource::resource('image'));
         $this->assertEquals(File::class, Resource::resource('file'));
-        $this->assertNull(Resource::resource('test'));
+        $this->assertEquals('test', Resource::resource('test'));
     }
 
     public function testCreateFromRequest()

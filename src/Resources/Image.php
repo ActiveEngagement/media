@@ -14,13 +14,6 @@ use Intervention\Image\ImageManagerStatic;
 class Image extends Resource
 {
     /**
-     * The available plugins.
-     *
-     * @var array
-     */
-    protected static array $plugins = [];
-
-    /**
      * The exif data instance.
      *
      * @var ExifData

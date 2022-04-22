@@ -11,13 +11,6 @@ use Illuminate\Support\Facades\Storage;
 class File extends Resource
 {
     /**
-     * The available plugins.
-     *
-     * @var array
-     */
-    protected static array $plugins = [];
-    
-    /**
      * The data stream.
      *
      * @var Stream

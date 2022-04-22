@@ -31,6 +31,13 @@ interface Plugin
     public function created(Resource $resource);
 
     /**
+     * Get the plugin options.
+     *
+     * @return Collection
+     */
+    public function options(): Collection;
+
+    /**
      * Boot the plugin.
      *
      * @param Collection $options

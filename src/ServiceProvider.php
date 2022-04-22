@@ -26,14 +26,10 @@ class ServiceProvider extends BaseServiceProvider
             return new PluginFactory($app);
         });
 
-        $this->app->singleton(ResourceFactory::class, function() {
-            return new ResourceFactory();
+        $this->app->singleton(ResourceFactory::class, function($app) {
+            return new ResourceFactory($app);
         });
-
-        $this->app->get(ResourceFactory::class)->configure(
-            Config::get('media.resources')
-        );
-
+        
         $this->app->bind(Media::class, function($app, $args) {
             $class = Config::get('media.model');
 
@@ -59,7 +55,6 @@ class ServiceProvider extends BaseServiceProvider
         ], 'migration');
 
         $this->app->get(PluginFactory::class)->boot();
-        // $this->bootPlugins($this->app->get(ResourceFactory::class));
     }
 
     protected function bootPlugins($factory)
@@ -68,7 +63,7 @@ class ServiceProvider extends BaseServiceProvider
 
         foreach(Config::get('media.plugins', []) as $key => $plugins) {
             if($resource = $factory->resource($key)) {
-                $resource::plugins($plugins);
+                $resource::register($plugins);
             }
         }
     }

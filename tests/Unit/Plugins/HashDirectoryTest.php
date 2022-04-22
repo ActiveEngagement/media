@@ -11,7 +11,7 @@ class HashDirectoryTest extends TestCase
 {
     public function testHashDirectory()
     {
-        Image::plugins([
+        Image::register([
             [HashDirectory::class, [
                 'length' => 8
             ]]
@@ -20,5 +20,9 @@ class HashDirectoryTest extends TestCase
         $resource = Resource::path(__DIR__.'/../../src/image.jpeg');
         
         $this->assertEquals(8, strlen($resource->directory));
+
+        $resource = Resource::path(__DIR__.'/../../src/file.txt');
+        
+        $this->assertEquals(0, strlen($resource->directory));
     }
 }

@@ -26,6 +26,16 @@ abstract class Plugin implements PluginInterface
     }
 
     /**
+     * Get the plugin options.
+     *
+     * @return Collection
+     */
+    public function options(): Collection
+    {
+        return $this->options;
+    }
+
+    /**
      * Initialize the plugin.
      *
      * @param Resource $resource
@@ -67,6 +77,17 @@ abstract class Plugin implements PluginInterface
     public static function boot(Collection $options)
     {
         //
+    }
+
+    /**
+     * Create a new instance.
+     *
+     * @param Collection $options
+     * @return static
+     */
+    public static function make(Collection $options): static
+    {
+        return new static($options);
     }
 
 }

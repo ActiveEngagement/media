@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreign('model_id')->references('id')->on('media')->onDelete('cascade')->onUpdate('cascade');
             $table->morphs('mediable');
             $table->boolean('favorite')->default(false);
+            $table->integer('order')->default(0);
 		});
     }
 

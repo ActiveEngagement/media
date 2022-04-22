@@ -31,7 +31,6 @@ return new class extends Migration
             $table->json('exif')->nullable();
             $table->json('meta')->nullable();
             $table->json('tags')->nullable();
-            $table->timestamp('taken_at')->nullable();
             $table->timestamps();
         });
     }

@@ -351,6 +351,9 @@ abstract class Resource implements ResourceInterface, Arrayable
 
             $model->save();
 
+            $this->fireEvent('created', $model);
+            $this->resolvePluginMethod('created', $model);
+
             $this->fireEvent('storing', $model);
             $this->resolvePluginMethod('storing', $model);
 
@@ -358,9 +361,6 @@ abstract class Resource implements ResourceInterface, Arrayable
 
             $this->fireEvent('stored', $model);
             $this->resolvePluginMethod('stored', $model);
-
-            $this->fireEvent('created', $model);
-            $this->resolvePluginMethod('created', $model);
 
             return $model;
         });

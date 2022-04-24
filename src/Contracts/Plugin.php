@@ -16,9 +16,18 @@ interface Plugin
     public function initialized(Resource $resource);
     
     /**
+     * Runs before the `saving` event fires.
+     *
+     * @param Resource $resource
+     * @return void
+     */
+    public function beforeSaving(Resource $resource);
+    
+    /**
      * Runs after the `saving` event fires.
      *
      * @param Resource $resource
+     * @param Media $model
      * @return void
      */
     public function saving(Resource $resource, Media $model);

@@ -340,6 +340,9 @@ abstract class Resource implements ResourceInterface, Arrayable
     public function save(): Media|bool
     {
         return DB::transaction(function() {
+            $this->fireEvent('beforeSaving');
+            $this->resolvePluginMethod('beforeSaving');
+
             $model = app()->make(Media::class, $this->attributes());
 
             if($this->parent) {

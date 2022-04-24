@@ -48,6 +48,17 @@ abstract class Plugin implements PluginInterface
     }
     
     /**
+     * Runs before the `saving` event fires.
+     *
+     * @param Resource $resource
+     * @return void
+     */
+    public function beforeSaving(Resource $resource)
+    {
+        //
+    }
+    
+    /**
      * Runs after the `saving` event fires.
      *
      * @param Resource $resource

@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class StreamTest extends TestCase
 {
-    public function testCreatingFileFromResource()
+    public function testSavingFileFromResource()
     {
         $file = Stream::make(fopen(__DIR__.'/../../src/file.txt', 'r+'));
         
@@ -19,7 +19,7 @@ class StreamTest extends TestCase
         $this->assertEquals('This is some sample text.', $file->getContents());
     }
 
-    public function testCreatingFileFromPath()
+    public function testSavingFileFromPath()
     {
         $file = Stream::make(__DIR__.'/../../src/file.txt');
         
@@ -30,7 +30,7 @@ class StreamTest extends TestCase
         $this->assertEquals('This is some sample text.', $file->getContents());
     }
 
-    public function testCreatingFileFromSplFileInfo()
+    public function testSavingFileFromSplFileInfo()
     {
         $file = Stream::make(
             new UploadedFile(__DIR__.'/../../src/file.txt', 'file.text')
@@ -43,7 +43,7 @@ class StreamTest extends TestCase
         $this->assertEquals('This is some sample text.', $file->getContents());
     }
 
-    public function testCreatingFileFromString()
+    public function testSavingFileFromString()
     {
         $file = Stream::make('This is some sample text.', [
             'metadata' => [

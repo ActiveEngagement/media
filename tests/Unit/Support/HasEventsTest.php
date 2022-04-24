@@ -10,27 +10,27 @@ class HasEventsTest extends TestCase
 {
     public function testEventDispatcher()
     {
-        $creating = 0;
-        $created = 0;
+        $saving = 0;
+        $saved = 0;
 
         $file = new UploadedFile(
             __DIR__.'/../../src/image.jpeg', 'image.jpeg'
         );
 
-        Image::creating(function() use (&$creating) {
-            $creating++;
+        Image::saving(function() use (&$saving) {
+            $saving++;
         });
 
-        Image::created(function() use (&$created) {
-            $created++;
+        Image::saved(function() use (&$saved) {
+            $saved++;
         });
 
         $resource = (new Image($file))
-            ->creating(function() use (&$creating) {
-                $creating++;
+            ->saving(function() use (&$saving) {
+                $saving++;
             })
-            ->created(function() use (&$created) {
-                $created++;
+            ->saved(function() use (&$saved) {
+                $saved++;
             });
         
         $resource->save();
@@ -39,7 +39,7 @@ class HasEventsTest extends TestCase
 
         $resource->save();
 
-        $this->assertEquals(2, $creating);
-        $this->assertEquals(2, $created);
+        $this->assertEquals(2, $saving);
+        $this->assertEquals(2, $saved);
     }
 }

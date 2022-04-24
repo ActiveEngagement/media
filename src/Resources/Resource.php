@@ -346,13 +346,13 @@ abstract class Resource implements ResourceInterface, Arrayable
                 $model->parent()->associate($this->parent);
             }
 
-            $this->fireEvent('creating', $model);
-            $this->resolvePluginMethod('creating', $model);
+            $this->fireEvent('saving', $model);
+            $this->resolvePluginMethod('saving', $model);
 
             $model->save();
 
-            $this->fireEvent('created', $model);
-            $this->resolvePluginMethod('created', $model);
+            $this->fireEvent('saved', $model);
+            $this->resolvePluginMethod('saved', $model);
 
             $this->fireEvent('storing', $model);
             $this->resolvePluginMethod('storing', $model);

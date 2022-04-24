@@ -48,25 +48,25 @@ abstract class Plugin implements PluginInterface
     }
     
     /**
-     * Runs after the `creating` event fires.
+     * Runs after the `saving` event fires.
      *
      * @param Resource $resource
      * @param Media $model
      * @return void
      */
-    public function creating(Resource $resource, Media $model)
+    public function saving(Resource $resource, Media $model)
     {
         //
     }
     
     /**
-     * Runs after the `created` event fires.
+     * Runs after the `saved` event fires.
      *
      * @param Resource $resource
      * @param Media $model
      * @return void
      */
-    public function created(Resource $resource, Media $model)
+    public function saved(Resource $resource, Media $model)
     {
         //
     }

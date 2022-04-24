@@ -44,7 +44,7 @@ class ExtractImageColors extends Plugin
             ));
         });
     
-        Image::creating(function(Image $resource, Media $model) use ($options) {
+        Image::saving(function(Image $resource, Media $model) use ($options) {
             $model->colors = $resource->palette(
                 (int) $options->get('colorCount', 10),
                 (int) $options->get('quality', 10)

@@ -10,11 +10,14 @@ use Actengage\Media\Support\Attributes;
 use Actengage\Media\Support\HasEvents;
 use Actengage\Media\Support\HasPlugins;
 use Closure;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Traits\Macroable;
+use ReflectionClass;
+use ReflectionProperty;
 
-abstract class Resource implements ResourceInterface
+abstract class Resource implements ResourceInterface, Arrayable
 {
     use Attributes, HasEvents, HasPlugins, Macroable {
 		Attributes::__call as __callAttributes;
@@ -346,9 +349,15 @@ abstract class Resource implements ResourceInterface
             $this->fireEvent('creating', $model);
             $this->resolvePluginMethod('creating', $model);
 
+            $model->save();
+
+            $this->fireEvent('storing', $model);
+            $this->resolvePluginMethod('storing', $model);
+
             $this->store($model);
 
-            $model->save();
+            $this->fireEvent('stored', $model);
+            $this->resolvePluginMethod('stored', $model);
 
             $this->fireEvent('created', $model);
             $this->resolvePluginMethod('created', $model);
@@ -390,6 +399,29 @@ abstract class Resource implements ResourceInterface
         }
 
         return $this;
+    }
+
+    /**
+     * Get the instance as an array.
+     *
+     * @return array<TKey, TValue>
+     */
+    public function toArray()
+    {
+        $properties = (new ReflectionClass($this))
+            ->getProperties(ReflectionProperty::IS_PUBLIC);
+
+        return collect($properties)
+            ->mapWithKeys(function($property) {
+                $value = $property->getValue($this);
+
+                if($value instanceof Arrayable) {
+                    $value = $value->toArray();
+                }
+
+                return [$property->getName() => $value];
+            })
+            ->all();
     }
 
     /**

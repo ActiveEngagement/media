@@ -4,6 +4,7 @@ namespace Actengage\Media\Contracts;
 
 use Actengage\Media\Media;
 use Closure;
+use Psr\Http\Message\StreamInterface;
 
 interface Resource
 {
@@ -103,6 +104,13 @@ interface Resource
     public function store(Media $model): bool;
 
     /**
+     * Get the resource data as a stream.
+     *
+     * @return StreamInterface
+     */
+    public function stream(): StreamInterface;
+
+    /**
      * Associate a parent model to the resource.
      *
      * @param Media|null $model
@@ -132,6 +140,13 @@ interface Resource
      * @return self
      */
     public function title(string $value): self;
+
+    /**
+     * Get the instance as an array.
+     *
+     * @return array<TKey, TValue>
+     */
+    public function toArray();
 
     /**
      * Add a `when` callback resolver.

@@ -22,15 +22,4 @@ class HashDirectory extends Plugin
             substr(sha1(microtime().Str::random(8)), 0, $length)
         );       
     }
-
-    /**
-     * Boot the plugin.
-     *
-     * @param Collection $options
-     * @return void
-     */
-    public static function boot(Collection $options)
-    {
-        
-    }
 }

@@ -10,6 +10,7 @@ use ColorThief\ColorThief;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\ImageManagerStatic;
+use Psr\Http\Message\StreamInterface;
 
 class Image extends Resource
 {
@@ -150,6 +151,16 @@ class Image extends Resource
         return $this->image;
     }
     
+    /**
+     * Get the resource data as a stream.
+     *
+     * @return StreamInterface
+     */
+    public function stream(): StreamInterface
+    {
+        return $this->image->stream();
+    }
+
     /**
      * Store the resource on the disk.
      *

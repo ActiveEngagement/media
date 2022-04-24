@@ -22,7 +22,7 @@ trait HasEvents
      * @var array
      */
     protected static array $observables = [
-        'initialized', 'creating', 'created'
+        'initialized', 'creating', 'created', 'storing', 'stored'
     ];
     
     /**

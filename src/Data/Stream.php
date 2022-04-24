@@ -4,16 +4,11 @@ namespace Actengage\Media\Data;
 
 use Actengage\Media\Exceptions\NotReadableException;
 use GuzzleHttp\Psr7\Stream as BaseStream;
-use Illuminate\Support\Arr;
+use Psr\Http\Message\StreamInterface;
 use SplFileInfo;
 
 class Stream extends BaseStream
 {
-    /**
-     * @var string $filename.
-     */
-    protected $filename;
-
     /**
      * @var resource
      */
@@ -80,6 +75,10 @@ class Stream extends BaseStream
      */
     public static function make($subject, array $options = []): static
     {
+        if($subject instanceof StreamInterface) {
+            return static::createFromStreamInterface($subject, $options);
+        }
+
         if(is_resource($subject)) {
             return static::createFromResource($subject, $options);
         }
@@ -110,7 +109,7 @@ class Stream extends BaseStream
      * @param array $options
      * @return static
      */
-    protected static function createFromResource($subject, array $options = [])
+    protected static function createFromResource($subject, array $options = []): static
     {
         return new static($subject, $options);
     }
@@ -121,7 +120,7 @@ class Stream extends BaseStream
      * @param array $options
      * @return static
      */
-    protected static function createFromPath(string $data, array $options = [])
+    protected static function createFromPath(string $data, array $options = []): static
     {
         return new static(fopen($data, 'r+'), $options);
     }
@@ -133,9 +132,47 @@ class Stream extends BaseStream
      * @param array $options
      * @return static
      */
-    protected static function createFromSplFileInfo(SplFileInfo $data, array $options = [])
+    protected static function createFromSplFileInfo(SplFileInfo $data, array $options = []): static
     {
         return new static(fopen($data->getPathname(), 'r+'), $options);
+    }
+
+    /**
+     * Create from PSR stream interface.
+     *
+     * @param StreamInterface $stream
+     * @return static
+     */
+    protected static function createFromStreamInterface(StreamInterface $stream, array $options = []): static
+    {
+        $resource = fopen('php://memory','r+');
+
+        $stream->rewind();
+
+        while(!$stream->eof()) {
+            fwrite($resource, $stream->read(1000000));
+        }
+
+        $stream->rewind();
+
+        rewind($resource);
+        
+        return new Stream($resource, $options);
+
+
+        // $data = new Stream(fopen('php://memory','r+'), $options);
+        
+        // $stream->rewind();
+
+        // while(!$stream->eof()) {
+        //     $data->write($stream->read(1000000));
+        // }
+
+        // $stream->rewind();
+        
+        // $data->rewind();
+
+        // return $data;
     }
 
     /**
@@ -145,13 +182,13 @@ class Stream extends BaseStream
      * @param array $options
      * @return static
      */
-    protected static function createFromString(string $data, array $options = [])
+    protected static function createFromString(string $data, array $options = []): static
     {
-        $stream = fopen('php://memory','r+');
+        $resource = fopen('php://memory','r+');
 
-        fwrite($stream, $data);
-        rewind($stream);
+        fwrite($resource, $data);
+        rewind($resource);
 
-        return new static($stream, $options);
+        return new static($resource, $options);
     }
 }

@@ -7,6 +7,7 @@ use Actengage\Media\Exceptions\InvalidResourceException;
 use Actengage\Media\Exceptions\NotReadableException;
 use Actengage\Media\Media;
 use Illuminate\Support\Facades\Storage;
+use Psr\Http\Message\StreamInterface;
 
 class File extends Resource
 {
@@ -67,9 +68,9 @@ class File extends Resource
     /**
      * Get the stream instance.
      *
-     * @return Stream
+     * @return StreamInterface
      */
-    public function stream(): Stream
+    public function stream(): StreamInterface
     {
         return $this->stream;
     }

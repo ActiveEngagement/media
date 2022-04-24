@@ -32,10 +32,14 @@ class PluginConfig
     /**
      * Create an instance of the config.
      *
-     * @param array $plugin
+     * @param array|string $plugin
      */
-    public function __construct(array $plugin)
+    public function __construct(array|string $plugin)
     {
+        if(is_string($plugin)) {
+            $plugin = [$plugin];
+        }
+        
         $this->class = Arr::get($plugin, 0);
         $this->options = new Collection(
             Arr::get($plugin, 1, [])
@@ -108,10 +112,10 @@ class PluginConfig
     /**
      * Create an instance of the PluginConfig.
      *
-     * @param array $config
+     * @param PluginConfig|array|string $config
      * @return PluginConfig
      */
-    public static function make(PluginConfig|array $config): PluginConfig
+    public static function make(PluginConfig|array|string $config): PluginConfig
     {
         if($config instanceof PluginConfig) {
             return $config;

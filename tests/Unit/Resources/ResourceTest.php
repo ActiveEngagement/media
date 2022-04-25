@@ -138,7 +138,7 @@ class ResourceTest extends TestCase
     public function testInitializingWithoutData()
     {
         $resource = new Image();
-        $resource->initialize(__DIR__.'/../../src/file.txt');
+        $resource->initialize(__DIR__.'/../../src/image.jpeg');
         
         $this->assertTrue($resource->save()->exists);
     }

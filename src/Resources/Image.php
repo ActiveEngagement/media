@@ -2,6 +2,7 @@
 
 namespace Actengage\Media\Resources;
 
+use Actengage\Media\Data\Stream;
 use Actengage\Media\Exceptions\InvalidResourceException;
 use Actengage\Media\Exceptions\BadAttributeException;
 use Actengage\Media\Media;
@@ -169,8 +170,12 @@ class Image extends Resource
      */
     public function store(Media $model): bool
     {
-        return Storage::disk($model->disk)->put(
-            $model->relative_path, $this->image->encode($this->extension)
+        $stream = Stream::make($this->image->stream(
+            $this->extension
+        ));
+
+        return Storage::disk($model->disk)->writeStream(
+            $model->relative_path, $stream->resource()
         );
     }
 }

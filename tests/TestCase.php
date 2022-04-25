@@ -6,6 +6,7 @@ use Actengage\Media\Facades\Media;
 use Actengage\Media\Facades\Plugin;
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\Resources\Image;
+use Actengage\Media\Resources\Resource as BaseResource;
 use Illuminate\Support\Facades\Storage;
 use Actengage\Media\ServiceProvider;
 use Orchestra\Testbench\TestCase as BaseTestCase;
@@ -29,6 +30,8 @@ class TestCase extends BaseTestCase
         Storage::fake('public');
 
         Plugin::flush();
+        BaseResource::flushMacros();
+        BaseResource::flushEventListeners();
     }
 
     /**

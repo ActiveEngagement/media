@@ -20,8 +20,7 @@ class ImageTest extends TestCase
 
         $resource = Resource::make($file)
             ->disk('public')
-            ->directory('images')
-            ->greyscale();
+            ->directory('images');
 
         $this->assertInstanceOf(Image::class, $resource);
         $this->assertInstanceOf(\Intervention\Image\Image::class, $resource->image());
@@ -29,8 +28,6 @@ class ImageTest extends TestCase
         $this->assertEquals('image/jpeg', $resource->mime);
         $this->assertEquals('jpeg', $resource->extension);
         $this->assertInstanceOf(ExifData::class, $resource->exif);
-        $this->assertEquals(['999999', '272727', '444444'], $resource->palette(3)->map->getHex()->toArray());
-        $this->assertEquals('a9a9a9', $resource->color()->getHex());
         
         $model = $resource->save();
 

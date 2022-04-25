@@ -34,12 +34,12 @@ class PreserveOriginalResource extends Plugin
     }
 
     /**
-     * Fires after the resource has been saved.
+     * Fires after the resource has been stored.
      *
      * @param Resource $resource
      * @return void
      */
-    public function saved(Resource $resource, Media $model)
+    public function stored(Resource $resource, Media $model)
     {
         // Ignore original resource files to prevent recursion
         if($resource instanceof OriginalResource) {

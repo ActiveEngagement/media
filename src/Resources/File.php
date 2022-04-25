@@ -19,16 +19,18 @@ class File extends Resource
     protected Stream $stream;
 
     /**
-     * Create an instance of the File resource.
+     * Initialize the resource.
      *
-     * @param mixed $data
-     * @throws InvalidResourceException
      * @return void
      */
-    public function __construct(mixed $data)
+    public function initialize(mixed $data)
     {
         try {
             $this->stream = Stream::make($data);
+            $this->extension = $this->stream->extension();
+            $this->filename = $this->stream->filename();
+            $this->filesize = $this->stream->getSize();
+            $this->mime = $this->stream->mime();
         }
         catch(NotReadableException $e) {
             throw new InvalidResourceException(
@@ -36,20 +38,7 @@ class File extends Resource
             );
         }
 
-        parent::__construct();
-    }
-
-    /**
-     * Initialize the resource.
-     *
-     * @return void
-     */
-    public function initialize()
-    {
-        $this->extension = $this->stream->extension();
-        $this->filename = $this->stream->filename();
-        $this->filesize = $this->stream->getSize();
-        $this->mime = $this->stream->mime();
+        parent::initialize($data);
     }
 
     /**

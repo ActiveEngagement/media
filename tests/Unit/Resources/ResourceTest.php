@@ -134,4 +134,13 @@ class ResourceTest extends TestCase
         
         $this->assertEquals('286 B', $model->size);
     }
+
+    public function testInitializingWithoutData()
+    {
+        $resource = new Image();
+        $resource->initialize(__DIR__.'/../../src/file.txt');
+        
+        $this->assertTrue($resource->save()->exists);
+    }
+
 }

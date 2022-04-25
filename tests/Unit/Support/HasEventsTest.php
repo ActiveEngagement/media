@@ -2,44 +2,39 @@
 
 namespace Tests\Unit\Support;
 
+use Actengage\Media\Resources\File;
 use Actengage\Media\Resources\Image;
+use Actengage\Media\Resources\Resource;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
+use Tests\TestEvent;
 
 class HasEventsTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Resource::setEventDispatcher(Event::fake());
+    }
+
     public function testEventDispatcher()
     {
-        $saving = 0;
-        $saved = 0;
+        $class = new class extends File {
+            protected $dispatchesEvents = [
+                'initialized' => TestEvent::class
+            ];
+        };
 
-        $file = new UploadedFile(
-            __DIR__.'/../../src/image.jpeg', 'image.jpeg'
-        );
-
-        Image::saving(function() use (&$saving) {
-            $saving++;
-        });
-
-        Image::saved(function() use (&$saved) {
-            $saved++;
-        });
-
-        $resource = (new Image($file))
-            ->saving(function() use (&$saving) {
-                $saving++;
-            })
-            ->saved(function() use (&$saved) {
-                $saved++;
-            });
-        
-        $resource->save();
-        
-        Image::flushEventListeners();
-
+        $resource = new $class();
+        $resource->initialize(__DIR__.'/../../src/file.txt');
         $resource->save();
 
-        $this->assertEquals(2, $saving);
-        $this->assertEquals(2, $saved);
+        Event::assertDispatched($class::dispatchEventName('initialized'));
+        Event::assertDispatched($class::dispatchEventName('saving'));
+        Event::assertDispatched($class::dispatchEventName('saved'));
+        Event::assertDispatched($class::dispatchEventName('storing'));
+        Event::assertDispatched($class::dispatchEventName('stored'));
     }
 }

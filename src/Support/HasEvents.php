@@ -15,16 +15,62 @@ trait HasEvents
     protected static Dispatcher $dispatcher;
 
     /**
+     * The event map for the model.
+     *
+     * Allows for object-based events for native Eloquent events.
+     *
+     * @var array
+     */
+    protected $dispatchesEvents = [];
+
+    /**
      * User exposed observable events.
      *
      * These are extra user-defined events observers may subscribe to.
      *
      * @var array
      */
-    protected static array $observables = [
-        'initialized', 'saving', 'saved', 'storing', 'stored'
-    ];
+    protected array $observables = [];
     
+    /**
+     * Filter the event results.
+     *
+     * @param  mixed  $result
+     * @return mixed
+     */
+    protected function filterEventResults($result)
+    {
+        if(is_array($result)) {
+            $result = array_filter($result, function ($response) {
+                return ! is_null($response);
+            });
+        }
+
+        return $result;
+    }
+
+    /**
+     * Fire a custom model event for the given event.
+     *
+     * @param  string  $event
+     * @param  string  $method
+     * @return mixed|null
+     */
+    protected function fireCustomEvent($event)
+    {
+        if(!isset($this->dispatchesEvents[$event])) {
+            return;
+        }
+        
+        $result = static::$dispatcher->dispatch(
+            new $this->dispatchesEvents[$event]($this)
+        );
+
+        if(!is_null($result)) {
+            return $result;
+        }
+    }
+
     /**
      * Fire the given event for the resource.
      *
@@ -38,6 +84,14 @@ trait HasEvents
             return true;
         }
 
+        $result = $this->filterEventResults(
+            $this->fireCustomEvent($event)
+        );
+
+        if($result === false) {
+            return false;
+        }
+
         return static::$dispatcher->dispatch(
             static::dispatchEventName($event), [$this, ...$args]
         );
@@ -48,9 +102,14 @@ trait HasEvents
      *
      * @return array
      */
-    public static function getObservableEvents()
+    public function getObservableEvents()
     {
-        return static::$observables;
+        return array_merge(
+            [
+                'initialized', 'saving', 'saved', 'storing', 'stored'
+            ],
+            $this->observables
+        );
     }
 
     /**
@@ -59,9 +118,9 @@ trait HasEvents
      * @param  array  $observables
      * @return void
      */
-    public static function setObservableEvents(array $observables)
+    public function setObservableEvents(array $observables)
     {
-        static::$observables = $observables;
+        $this->observables = $observables;
     }
 
     /**
@@ -70,10 +129,10 @@ trait HasEvents
      * @param  array|mixed  $observables
      * @return void
      */
-    public static function addObservableEvents($observables)
+    public function addObservableEvents($observables)
     {
-        static::$observables = array_unique(array_merge(
-            static::$observables, is_array($observables) ? $observables : func_get_args()
+        $this->observables = array_unique(array_merge(
+            $this->observables, is_array($observables) ? $observables : func_get_args()
         ));
     }
 
@@ -83,10 +142,10 @@ trait HasEvents
      * @param  array|mixed  $observables
      * @return void
      */
-    public static function removeObservableEvents($observables)
+    public function removeObservableEvents($observables)
     {
-        static::$observables = array_diff(
-            static::$observables, is_array($observables) ? $observables : func_get_args()
+        $this->observables = array_diff(
+            $this->observables, is_array($observables) ? $observables : func_get_args()
         );
     }
 
@@ -96,9 +155,9 @@ trait HasEvents
      * @param string $name
      * @return boolean
      */
-    public static function isObservableEvent(string $name): bool
+    public function isObservableEvent(string $name): bool
     {
-        return in_array($name, static::getObservableEvents());
+        return in_array($name, $this->getObservableEvents());
     }
 
     /**
@@ -141,7 +200,7 @@ trait HasEvents
      */
     protected static function registerEvent(string $event, $callback)
     {
-        if (isset(static::$dispatcher)) {
+        if(isset(static::$dispatcher)) {
             static::$dispatcher->listen(
                 static::dispatchEventName($event), $callback
             );
@@ -159,7 +218,9 @@ trait HasEvents
             return;
         }
 
-        foreach(static::getObservableEvents() as $event) {
+        $instance = new static;
+
+        foreach($instance->getObservableEvents() as $event) {
             static::$dispatcher->forget(static::dispatchEventName($event));
         }
     }

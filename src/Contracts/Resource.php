@@ -9,13 +9,6 @@ use Psr\Http\Message\StreamInterface;
 interface Resource
 {
     /**
-     * Initialize the resource.
-     *
-     * @return void
-     */
-    public function initialize();
-
-    /**
      * Get the model attributes.
      *
      * @return array
@@ -77,6 +70,14 @@ interface Resource
      * @return self
      */
     public function filesize(string $value): self;
+
+    /**
+     * Initialize the resource.
+     *
+     * @param mixed $data
+     * @return void
+     */
+    public function initialize(mixed $data);
 
     /**
      * Set the `meta` property.

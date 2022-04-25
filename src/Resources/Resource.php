@@ -112,14 +112,14 @@ abstract class Resource implements ResourceInterface, Arrayable
     /**
      * Create a new resource instance.
      *
+     * @param mixed $data
      * @return void
      */
-    public function __construct()
+    public function __construct(mixed $data = null)
     {        
-        $this->plugins = Plugin::initialize($this);
-        $this->initialize();
-        $this->fireEvent('initialized');
-        $this->resolvePluginMethod('initialized');
+        if($data) {
+            $this->initialize($data);
+        }
     }
 
     /**
@@ -135,7 +135,7 @@ abstract class Resource implements ResourceInterface, Arrayable
             return $this->__callMacros($name, $arguments);
         }
 
-        if(static::isObservableEvent($name)) {
+        if($this->isObservableEvent($name)) {
             static::registerEvent($name, ...$arguments);
             
             return $this;
@@ -274,6 +274,19 @@ abstract class Resource implements ResourceInterface, Arrayable
     public function filesize(string $value): self
     {
         return $this->attribute('filesize', $value);
+    }
+
+    /**
+     * Initialize the resource.
+     *
+     * @param mixed $data
+     * @return void
+     */
+    public function initialize(mixed $data)
+    {
+        $this->plugins = Plugin::initialize($this);
+        $this->fireEvent('initialized');
+        $this->resolvePluginMethod('initialized');
     }
 
     /**

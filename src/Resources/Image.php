@@ -30,27 +30,6 @@ class Image extends Resource
     protected \Intervention\Image\Image $image;
 
     /**
-     * Create an instance of the Image resource.
-     *
-     * @param mixed $data
-     * @throws InvalidResourceException
-     * @return void
-     */
-    public function __construct(mixed $data = null)
-    {
-        try {
-            $this->image = ImageManagerStatic::make($data);
-        } 
-        catch(NotReadableException $e) {
-            throw new InvalidResourceException(
-                $e->getMessage(), $e->getCode(), $e
-            );
-        }
-            
-        parent::__construct();
-    }
-
-    /**
      * Call methods on the image resource and return the value.
      *
      * @param string $name
@@ -72,15 +51,26 @@ class Image extends Resource
     /**
      * Initialize the resource.
      *
+     * @param mixed $data
      * @return void
      */
-    public function initialize()
+    public function initialize(mixed $data)
     {
-        $this->extension = $this->image->extension;
-        $this->filename = basename($this->image->basePath());
-        $this->filesize = $this->image->filesize();
-        $this->mime = $this->image->mime();
-        $this->exif = new ExifData($this->image);
+        try {
+            $this->image = ImageManagerStatic::make($data); 
+            $this->extension = $this->image->extension;
+            $this->filename = basename($this->image->basePath());
+            $this->filesize = $this->image->filesize();
+            $this->mime = $this->image->mime();
+            $this->exif = new ExifData($this->image);
+        } 
+        catch(NotReadableException $e) {
+            throw new InvalidResourceException(
+                $e->getMessage(), $e->getCode(), $e
+            );
+        }
+
+        parent::initialize($data);
     }
 
     /**

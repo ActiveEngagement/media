@@ -3,8 +3,8 @@
 namespace Actengage\Media;
 
 use Actengage\Media\Resources\Resource;
-use Illuminate\Events\Dispatcher;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 class ServiceProvider extends BaseServiceProvider
@@ -19,8 +19,6 @@ class ServiceProvider extends BaseServiceProvider
         $this->mergeConfigFrom(
             __DIR__.'/../config/media.php', 'media'
         );
-
-        Resource::setEventDispatcher(new Dispatcher());
 
         $this->app->singleton(PluginFactory::class, function($app) {
             return new PluginFactory($app);
@@ -44,6 +42,8 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function boot()
     {
+        Resource::setEventDispatcher($this->app['events']);
+
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         $this->publishes([

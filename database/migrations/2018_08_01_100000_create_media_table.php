@@ -11,10 +11,6 @@ return new class extends Migration
      */
     public function up()
     {
-        if(Schema::hasTable('media')) {
-            return;
-        }
-
         Schema::create('media', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('parent_id')->unsigned()->nullable();

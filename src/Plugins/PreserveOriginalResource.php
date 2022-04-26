@@ -11,6 +11,15 @@ use Illuminate\Support\Str;
 class PreserveOriginalResource extends Plugin
 {
     /**
+     * The resources that are ignored by the plugin.
+     *
+     * @var array
+     */
+    protected static array $ignoreResources = [
+        OriginalResource::class
+    ];
+
+    /**
      * The original resource stream.
      *
      * @var OriginalResource
@@ -25,11 +34,6 @@ class PreserveOriginalResource extends Plugin
      */
     public function initialized(Resource $resource)
     {
-        // Ignore original resource files to prevent recursion
-        if($resource instanceof OriginalResource) {
-            return;
-        }
-
         $this->resource = new OriginalResource($resource->stream());
     }
 
@@ -41,11 +45,6 @@ class PreserveOriginalResource extends Plugin
      */
     public function stored(Resource $resource, Media $model)
     {
-        // Ignore original resource files to prevent recursion
-        if($resource instanceof OriginalResource) {
-            return;
-        }
-     
         $this->resource
             ->parent($model)
             ->context((string) $this->options->get('context', 'original'))

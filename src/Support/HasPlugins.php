@@ -23,7 +23,9 @@ trait HasPlugins
      */
     public function resolvePluginMethod(string $method, ...$args): self
     {
-        $this->plugins->map->$method($this, ...$args);
+        $this->plugins->filter->verifyResource($this)->map->$method(
+            $this, ...$args
+        );
 
         return $this;
     }

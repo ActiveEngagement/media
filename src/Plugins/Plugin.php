@@ -10,6 +10,13 @@ use Illuminate\Support\Collection;
 abstract class Plugin implements PluginInterface
 {
     /**
+     * The resources that are ignored by the plugin.
+     *
+     * @var array
+     */
+    protected static array $ignoreResources = [];
+
+    /**
      * The plugin options.
      *
      * @var Collection
@@ -105,6 +112,16 @@ abstract class Plugin implements PluginInterface
     {
         //
     }
+    
+    /**
+     * Verify a resource against the ignored resources.
+     *
+     * @return boolean
+     */
+    public function verifyResource(Resource $resource): bool
+    {
+        return !in_array(get_class($resource), static::ignoredResources());
+    }
 
     /**
      * Boot the plugin.
@@ -115,6 +132,16 @@ abstract class Plugin implements PluginInterface
     public static function boot(Collection $options)
     {
         //
+    }
+
+    /**
+     * Get the resources that are ignored by the plugin.
+     *
+     * @return array
+     */
+    public static function ignoredResources(): array
+    {
+        return static::$ignoreResources;
     }
 
     /**

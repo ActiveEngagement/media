@@ -42,6 +42,16 @@ abstract class Plugin implements PluginInterface
     {
         return $this->options;
     }
+    
+    /**
+     * Verify a resource against the ignored resources.
+     *
+     * @return boolean
+     */
+    public function verifyResource(Resource $resource): bool
+    {
+        return !in_array(get_class($resource), static::ignoredResources());
+    }
 
     /**
      * Initialize the plugin.
@@ -111,16 +121,6 @@ abstract class Plugin implements PluginInterface
     public function stored(Resource $resource, Media $model)
     {
         //
-    }
-    
-    /**
-     * Verify a resource against the ignored resources.
-     *
-     * @return boolean
-     */
-    public function verifyResource(Resource $resource): bool
-    {
-        return !in_array(get_class($resource), static::ignoredResources());
     }
 
     /**

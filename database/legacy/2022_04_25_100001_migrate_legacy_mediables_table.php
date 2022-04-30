@@ -12,7 +12,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('mediables', function (Blueprint $table) {
-            $table->boolean('favorite')->default(false)->after('mediable');
+            $table->boolean('favorite')->default(false)->after('mediable_type');
             $table->integer('order')->default(0)->after('favorite');
         });
     }

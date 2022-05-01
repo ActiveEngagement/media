@@ -55,12 +55,6 @@ return [
     */
 
     'plugins' => [
-        // [EnforceMaximumImageDimensions::class, [
-        //     'width' => 1024,
-        //     'height' => 768,
-        //     'aspectRatio' => true,
-        //     'upsize' => false
-        // ]],
 
         // [ExtractImageColors::class, [
         //     'colorCount' => 3,
@@ -68,6 +62,13 @@ return [
         // ]],
 
         // ExtractImageMetaData::class,
+        
+        // [EnforceMaximumImageDimensions::class, [
+        //     'width' => 1024,
+        //     'height' => 768,
+        //     'aspectRatio' => true,
+        //     'upsize' => false
+        // ]],
 
         // [HashDirectory::class, [
         //     'length' => 8

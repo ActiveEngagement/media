@@ -8,10 +8,12 @@ use Actengage\Media\Exceptions\BadAttributeException;
 use Actengage\Media\Media;
 use Actengage\Media\Support\ExifData;
 use ColorThief\ColorThief;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\ImageManagerStatic;
 use Psr\Http\Message\StreamInterface;
+use SplFileInfo;
 
 class Image extends Resource
 {
@@ -57,9 +59,9 @@ class Image extends Resource
     public function initialize(mixed $data)
     {
         try {
-            $this->image = ImageManagerStatic::make($data); 
-            $this->extension = $this->image->extension;
-            $this->filename = basename($this->image->basePath());
+            $this->image = ImageManagerStatic::make($data);
+            $this->filename = $this->extractFilename($data);
+            $this->extension = $this->extractExtension($data);
             $this->filesize = $this->image->filesize();
             $this->mime = $this->image->mime();
             $this->exif = new ExifData($this->image);
@@ -167,5 +169,43 @@ class Image extends Resource
         return Storage::disk($model->disk)->writeStream(
             $model->relative_path, $stream->resource()
         );
+    }
+
+    /**
+     * Extract the extension from the data.
+     *
+     * @param mixed $data
+     * @return string|null
+     */
+    protected function extractExtension(mixed $data): ?string
+    {
+        if($data instanceof UploadedFile) {
+            return $data->getClientOriginalExtension();
+        }
+
+        if($data instanceof Stream) {
+            return $data->extension();
+        }
+
+        return $this->image->extension;
+    }
+
+    /**
+     * Extract the filename from the data.
+     *
+     * @param mixed $data
+     * @return string|null
+     */
+    protected function extractFilename(mixed $data): ?string
+    {
+        if($data instanceof UploadedFile) {
+            return $data->getClientOriginalName();
+        }
+
+        if($data instanceof Stream) {
+            return $data->filename();
+        }
+
+        return basename($this->image->basePath());
     }
 }

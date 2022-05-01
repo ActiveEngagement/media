@@ -6,6 +6,7 @@ use Actengage\Media\Plugins\ModelDirectory;
 use Actengage\Media\Plugins\HashDirectory;
 use Actengage\Media\Plugins\HashFilename;
 use Actengage\Media\Plugins\PreserveOriginalResource;
+use Actengage\Media\Plugins\UpdateFilesizeAfterStoring;
 use Actengage\Media\Resources\File;
 use Actengage\Media\Resources\Image;
 
@@ -52,9 +53,11 @@ return [
     */
 
     'plugins' => [
+        // ModelDirectory::class,
+
         // PreserveOriginalResource::class,
 
-        // ModelDirectory::class,
+        // UpdateFilesizeAfterStoring::class,
 
         // [HashDirectory::class, [
         //     'length' => 8

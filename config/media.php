@@ -4,11 +4,10 @@ use Actengage\Media\Media;
 use Actengage\Media\Plugins\EnforceMaximumImageDimensions;
 use Actengage\Media\Plugins\ExtractImageColors;
 use Actengage\Media\Plugins\ExtractImageMetaData;
-use Actengage\Media\Plugins\ModelDirectory;
 use Actengage\Media\Plugins\HashDirectory;
 use Actengage\Media\Plugins\HashFilename;
+use Actengage\Media\Plugins\ModelDirectory;
 use Actengage\Media\Plugins\PreserveOriginalResource;
-use Actengage\Media\Plugins\UpdateFilesizeAfterStoring;
 use Actengage\Media\Resources\File;
 use Actengage\Media\Resources\Image;
 
@@ -55,6 +54,12 @@ return [
     */
 
     'plugins' => [
+        // [EnforceMaximumImageDimensions::class, [
+        //     'width' => 1024,
+        //     'height' => 768,
+        //     'aspectRatio' => true,
+        //     'upsize' => false
+        // ]],
 
         // [ExtractImageColors::class, [
         //     'colorCount' => 3,
@@ -62,13 +67,6 @@ return [
         // ]],
 
         // ExtractImageMetaData::class,
-        
-        // [EnforceMaximumImageDimensions::class, [
-        //     'width' => 1024,
-        //     'height' => 768,
-        //     'aspectRatio' => true,
-        //     'upsize' => false
-        // ]],
 
         // [HashDirectory::class, [
         //     'length' => 8
@@ -81,8 +79,6 @@ return [
         // ModelDirectory::class,
 
         // PreserveOriginalResource::class,
-
-        // UpdateFilesizeAfterStoring::class,
     ]
 
 ];

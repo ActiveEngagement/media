@@ -5,6 +5,8 @@ namespace Tests;
 use Actengage\Media\Facades\Media;
 use Actengage\Media\Facades\Plugin;
 use Actengage\Media\Facades\Resource;
+use Actengage\Media\PluginFactory;
+use Actengage\Media\ResourceFactory;
 use Illuminate\Support\Facades\Storage;
 use Actengage\Media\ServiceProvider;
 use Illuminate\Support\Facades\Event;
@@ -34,6 +36,9 @@ class TestCase extends BaseTestCase
             $resource::flushMacros();
             $resource::flushEventListeners();
         }
+
+        $this->app->get(ResourceFactory::class)->boot();
+        $this->app->get(PluginFactory::class)->boot();
     }
 
     /**

@@ -158,21 +158,6 @@ class Stream extends BaseStream
         rewind($resource);
         
         return new Stream($resource, $options);
-
-
-        // $data = new Stream(fopen('php://memory','r+'), $options);
-        
-        // $stream->rewind();
-
-        // while(!$stream->eof()) {
-        //     $data->write($stream->read(1000000));
-        // }
-
-        // $stream->rewind();
-        
-        // $data->rewind();
-
-        // return $data;
     }
 
     /**

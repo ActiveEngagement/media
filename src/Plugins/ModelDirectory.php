@@ -32,7 +32,7 @@ class ModelDirectory extends Plugin
      * @param Media $model
      * @return void
      */
-    public function stored(Resource $resource, Media $model)
+    public function storing(Resource $resource, Media $model)
     {
         $model->directory = $resource->directory;
         $model->save();

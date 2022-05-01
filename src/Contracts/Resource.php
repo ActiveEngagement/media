@@ -178,4 +178,11 @@ interface Resource
      * @return array<TKey, TValue>
      */
     public function toArray();
+
+    /**
+     * Boot the resource.
+     *
+     * @return void
+     */
+    public static function boot();
 }

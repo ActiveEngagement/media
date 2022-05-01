@@ -2,6 +2,7 @@
 
 namespace Actengage\Media;
 
+use Actengage\Media\Resources\Image;
 use Actengage\Media\Resources\Resource;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
@@ -42,8 +43,6 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function boot()
     {
-        Resource::setEventDispatcher($this->app['events']);
-
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         $this->publishes([
@@ -58,17 +57,9 @@ class ServiceProvider extends BaseServiceProvider
             __DIR__.'/../database/legacy' => database_path('migrations')
         ], 'media-migrations-legacy');
 
+        Resource::setEventDispatcher($this->app['events']);
+
+        $this->app->get(ResourceFactory::class)->boot();
         $this->app->get(PluginFactory::class)->boot();
-    }
-
-    protected function bootPlugins($factory)
-    {
-        dd(Config::get('media.plugins', []));
-
-        foreach(Config::get('media.plugins', []) as $key => $plugins) {
-            if($resource = $factory->resource($key)) {
-                $resource::register($plugins);
-            }
-        }
     }
 }

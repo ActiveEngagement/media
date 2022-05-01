@@ -156,7 +156,7 @@ abstract class Resource implements ResourceInterface, Arrayable
         if(static::hasMacro($name)) {
             return static::__callStaticMacros($name, $arguments);
         }
-
+        
         static::registerEvent($name, ...$arguments);
     }
 
@@ -482,6 +482,17 @@ abstract class Resource implements ResourceInterface, Arrayable
                 return [$property->getName() => $value];
             })
             ->all();
+    }
+
+
+    /**
+     * Boot the resource.
+     *
+     * @return void
+     */
+    public static function boot()
+    {
+        //
     }
 
     /**

@@ -23,8 +23,8 @@ return new class extends Migration
     public function down()
     {
         Schema::table('mediables', function (Blueprint $table) {
-            $table->removeColumn('favorite');
-            $table->removeColumn('order');
+            $table->dropColumn('favorite');
+            $table->dropColumn('order');
         });
     }
 };

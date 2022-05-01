@@ -11,17 +11,19 @@ return new class extends Migration
      */
     public function up()
     {
-        dd('legacy');
-        
         Schema::table('media', function (Blueprint $table) {
-            $table->removeColumn('ready');
-            $table->removeColumn('favorite');
-            $table->removeColumn('orig_filename');
+            $table->dropColumn([
+                'ready',
+                'favorite',
+                'orig_filename',
+                'filters',
+                'conversions',
+                'order', 
+                'taken_at',
+            ]);
+
+            $table->json('exif')->nullable()->after('size');
             $table->renameColumn('size', 'filesize');
-            $table->removeColumn('filters');
-            $table->removeColumn('conversions');
-            $table->removeColumn('order');
-            $table->removeColumn('taken_at');
         });
     }
 
@@ -34,7 +36,7 @@ return new class extends Migration
             $table->boolean('ready')->default(false)->after('parent_id');
             $table->boolean('favorite')->default(false)->after('ready');
             $table->string('orig_filename')->nullable()->after('filename');
-            $table->renameColumn('filesize', 'size')->default(0);
+            $table->renameColumn('filesize', 'size');
             $table->json('filters')->nullable()->after('filesize');
             $table->json('conversions')->nullable()->after('filters');
             $table->unsignedInteger('order')->nullable()->after('tags');

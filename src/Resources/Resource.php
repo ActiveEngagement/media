@@ -14,6 +14,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Traits\Macroable;
+use Psr\Http\Message\StreamInterface;
 use ReflectionClass;
 use ReflectionProperty;
 
@@ -268,11 +269,15 @@ abstract class Resource implements ResourceInterface, Arrayable
     /**
      * Set the `filesize` attribute.
      *
-     * @param string $value
+     * @param mixed $value
      * @return self
      */
-    public function filesize(string $value): self
+    public function filesize($value): self
     {
+        if($value instanceof StreamInterface) {
+            $value = $value->getSize();
+        }
+
         return $this->attribute('filesize', $value);
     }
 

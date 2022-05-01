@@ -45,12 +45,10 @@ class Image extends Resource
         catch(BadAttributeException $e) {
             call_user_func_array([$this->image, $name], $arguments);
 
-            $stream = Stream::make($this->image->stream(
+            $this->filesize($this->image->stream(
                 $this->extension
             ));
-            
-            $this->filesize($stream->getSize());
-        }        
+        }
 
         return $this;
     }

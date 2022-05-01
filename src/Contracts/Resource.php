@@ -66,10 +66,10 @@ interface Resource
     /**
      * Set the `filesize` property.
      *
-     * @param string $value
+     * @param mixed $value
      * @return self
      */
-    public function filesize(string $value): self;
+    public function filesize($value): self;
 
     /**
      * Initialize the resource.

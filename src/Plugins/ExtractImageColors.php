@@ -22,6 +22,15 @@ use Illuminate\Support\Collection;
 class ExtractImageColors extends Plugin
 {
     /**
+     * The resources that are ignored by the plugin.
+     *
+     * @var array
+     */
+    protected static array $compatibleResources = [
+        Image::class
+    ];
+    
+    /**
      * Runs after the `saving` event fires.
      *
      * @param Resource $resource

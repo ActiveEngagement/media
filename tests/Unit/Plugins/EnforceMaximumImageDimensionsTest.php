@@ -3,10 +3,9 @@
 namespace Tests\Unit\Plugins;
 
 use Actengage\Media\Exceptions\BadAttributeException;
+use Actengage\Media\Facades\Plugin;
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\Plugins\EnforceMaximumImageDimensions;
-use Actengage\Media\Resources\File;
-use Actengage\Media\Resources\Image;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
@@ -14,7 +13,7 @@ class EnforceMaximumImageDimensionsTest extends TestCase
 {
     public function testExtractImageColorsPlugin()
     {
-        Image::register([
+        Plugin::register([
             [EnforceMaximumImageDimensions::class, [
                 'width' => 100,
                 'height' => 100
@@ -33,7 +32,7 @@ class EnforceMaximumImageDimensionsTest extends TestCase
 
     public function testRegisteringPluginToFile()
     {
-        File::register([
+        Plugin::register([
             EnforceMaximumImageDimensions::class
         ]);
 

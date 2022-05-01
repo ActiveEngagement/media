@@ -2,6 +2,7 @@
 
 use Actengage\Media\Media;
 use Actengage\Media\Plugins\ExtractImageColors;
+use Actengage\Media\Plugins\ModelDirectory;
 use Actengage\Media\Plugins\HashDirectory;
 use Actengage\Media\Plugins\HashFilename;
 use Actengage\Media\Plugins\PreserveOriginalResource;
@@ -52,6 +53,8 @@ return [
 
     'plugins' => [
         // PreserveOriginalResource::class,
+
+        // ModelDirectory::class,
 
         // [HashDirectory::class, [
         //     'length' => 8

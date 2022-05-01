@@ -1,7 +1,9 @@
 <?php
 
 use Actengage\Media\Media;
+use Actengage\Media\Plugins\EnforceMaximumImageDimensions;
 use Actengage\Media\Plugins\ExtractImageColors;
+use Actengage\Media\Plugins\ExtractImageMetaData;
 use Actengage\Media\Plugins\ModelDirectory;
 use Actengage\Media\Plugins\HashDirectory;
 use Actengage\Media\Plugins\HashFilename;
@@ -53,11 +55,19 @@ return [
     */
 
     'plugins' => [
-        // ModelDirectory::class,
+        // [EnforceMaximumImageDimensions::class, [
+        //     'width' => 1024,
+        //     'height' => 768,
+        //     'aspectRatio' => true,
+        //     'upsize' => false
+        // ]],
 
-        // PreserveOriginalResource::class,
+        // [ExtractImageColors::class, [
+        //     'colorCount' => 3,
+        //     'quality' => 10
+        // ]],
 
-        // UpdateFilesizeAfterStoring::class,
+        // ExtractImageMetaData::class,
 
         // [HashDirectory::class, [
         //     'length' => 8
@@ -67,12 +77,11 @@ return [
         //     'length' => 8
         // ]],
 
-        // 'image' => [
-        //     [ExtractImageColors::class, [
-        //         'colorCount' => 3,
-        //         'quality' => 10
-        //     ]]
-        // ],
+        // ModelDirectory::class,
+
+        // PreserveOriginalResource::class,
+
+        // UpdateFilesizeAfterStoring::class,
     ]
 
 ];

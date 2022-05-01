@@ -284,6 +284,7 @@ abstract class Resource implements ResourceInterface, Arrayable
      */
     public function initialize(mixed $data)
     {
+        $this->disk = $this->disk ?? config('filesystems.default');
         $this->plugins = Plugin::initialize($this);
         $this->fireEvent('initialized');
         $this->resolvePluginMethod('initialized');

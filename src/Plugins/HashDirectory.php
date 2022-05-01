@@ -3,7 +3,6 @@
 namespace Actengage\Media\Plugins;
 
 use Actengage\Media\Contracts\Resource;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**

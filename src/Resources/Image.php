@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\ImageManagerStatic;
 use Psr\Http\Message\StreamInterface;
-use SplFileInfo;
 
 class Image extends Resource
 {

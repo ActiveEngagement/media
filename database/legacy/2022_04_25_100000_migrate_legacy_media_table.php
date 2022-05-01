@@ -11,6 +11,8 @@ return new class extends Migration
      */
     public function up()
     {
+        dd('legacy');
+        
         Schema::table('media', function (Blueprint $table) {
             $table->removeColumn('ready');
             $table->removeColumn('favorite');

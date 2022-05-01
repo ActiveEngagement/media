@@ -5,7 +5,6 @@ namespace Tests\Unit\Resources;
 use Actengage\Media\Contracts\Resource as ContractsResource;
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\Resources\Image;
-use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class ResourceTest extends TestCase
@@ -16,21 +15,79 @@ class ResourceTest extends TestCase
         $file = 0;
 
         Resource::path(__DIR__.'/../../src/image.jpeg')
-            ->when('image', function($resource) use (&$image) {
+            ->is(Image::class, function($resource) use (&$image) {
                 $this->assertInstanceOf(ContractsResource::class, $resource);
                 
                 $image++;
             })
-            ->when('file', function() use ($file) {
+            ->is('file', function() use ($file) {
                 $file++;
             })
-            ->when(['image', 'file'], function($resource) use (&$image, &$file) {
+            ->is(['image', 'file'], function($resource) use (&$image, &$file) {
                 $image++;
                 $file++;
             });
         
         $this->assertEquals(2, $image);
         $this->assertEquals(1, $file);
+    }
+
+    public function testResourceWhenTruthy()
+    {
+        $truths = 0;
+
+        Resource::path(__DIR__.'/../../src/image.jpeg')
+            ->when(true, function($resource) use (&$truths) {
+                $this->assertInstanceOf(ContractsResource::class, $resource);
+
+                $truths++;
+            })
+            ->when(function($resource) {
+                $this->assertInstanceOf(ContractsResource::class, $resource);
+
+                return true;
+            }, function() use (&$truths) {
+                $truths++;
+            })
+            ->when(false, function() use (&$truths) {
+                $truths++;
+            })
+            ->when(function() {
+                return false;
+            }, function() use (&$truths) {
+                $truths++;
+            });
+        
+        $this->assertEquals(2, $truths);
+    }
+
+    public function testResourceWhenFalsy()
+    {
+        $falsy = 0;
+
+        Resource::path(__DIR__.'/../../src/image.jpeg')
+            ->not(false, function($resource) use (&$falsy) {
+                $this->assertInstanceOf(ContractsResource::class, $resource);
+
+                $falsy++;
+            })
+            ->not(function($resource) {
+                $this->assertInstanceOf(ContractsResource::class, $resource);
+
+                return false;
+            }, function() use (&$falsy) {
+                $falsy++;
+            })
+            ->not(true, function() use (&$falsy) {
+                $falsy++;
+            })
+            ->not(function() {
+                return true;
+            }, function() use (&$falsy) {
+                $falsy++;
+            });
+        
+        $this->assertEquals(2, $falsy);
     }
 
     public function testDatabaseAttributes()

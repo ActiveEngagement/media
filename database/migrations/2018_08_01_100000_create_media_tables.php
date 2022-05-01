@@ -29,6 +29,15 @@ return new class extends Migration
             $table->json('tags')->nullable();
             $table->timestamps();
         });
+
+        Schema::create('mediables', function($table) {
+			$table->increments('id');
+            $table->integer('model_id')->unsigned();
+            $table->foreign('model_id')->references('id')->on('media')->onDelete('cascade')->onUpdate('cascade');
+            $table->morphs('mediable');
+            $table->boolean('favorite')->default(false);
+            $table->integer('order')->default(0);
+		});
     }
 
     /**
@@ -36,6 +45,7 @@ return new class extends Migration
      */
     public function down()
     {
+        Schema::dropIfExists('mediables');
         Schema::dropIfExists('media');
     }
 };

@@ -290,6 +290,23 @@ abstract class Resource implements ResourceInterface, Arrayable
     }
 
     /**
+     * Add an `is` callback resolver that executes when the resource matches
+     * the key(s).
+     *
+     * @param array|string $key
+     * @param Closure $fn
+     * @return self
+     */
+    public function is(array|string $key, Closure $fn): self
+    {
+        if(ResourceFactory::is($this, $key)) {
+            call_user_func($fn, $this);
+        }
+
+        return $this;
+    }
+
+    /**
      * Set the `meta` property.
      *
      * @param array|string $key
@@ -321,6 +338,27 @@ abstract class Resource implements ResourceInterface, Arrayable
     public function mime(string $value): self
     {
         return $this->attribute('mime', $value);
+    }
+
+    /**
+     * Add an `not` callback resolver that executes if the condition is
+     * `false`.
+     *
+     * @param Closure|boolean $value
+     * @param Closure $fn
+     * @return self
+     */
+    public function not(Closure|bool $value, Closure $fn): self
+    {
+        if($value instanceof Closure) {
+            $value = call_user_func($value, $this);
+        }
+        
+        if($value === false) {
+            call_user_func($fn, $this);
+        }
+
+        return $this;
     }
 
     /**
@@ -402,15 +440,20 @@ abstract class Resource implements ResourceInterface, Arrayable
     }
 
     /**
-     * Add a `when` callback resolver.
+     * Add an `when` callback resolver that executes if the condition is
+     * `true`.
      *
-     * @param array|string $key
+     * @param Closure|boolean $value
      * @param Closure $fn
      * @return self
      */
-    public function when(array|string $key, Closure $fn): self
+    public function when(Closure|bool $value, Closure $fn): self
     {
-        if(ResourceFactory::is($this, $key)) {
+        if($value instanceof Closure) {
+            $value = call_user_func($value, $this);
+        }
+        
+        if($value === true) {
             call_user_func($fn, $this);
         }
 

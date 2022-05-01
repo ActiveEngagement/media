@@ -49,7 +49,7 @@ class ResourceFactory
     public function is(Resource $resource, array|string $keys): bool
     {
         foreach(Arr::wrap($keys) as $key) {
-            if(Arr::get($this->resources, $key) == get_class($resource)) {
+            if(get_class($resource) === Arr::get($this->resources, $key, get_class($resource))) {
                 return true;
             }
         }

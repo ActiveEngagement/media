@@ -84,21 +84,54 @@ $media = $resource->save();
 
 ## Conditional Resource Methods
 
-Sometimes you may not know what kind of resource you are creating. You can use the `when()` method to conditionally chain methods to the resource. Use the key configuration in `config/media.php` for matching. 
+Sometimes you may not know what kind of resource you are creating. You can use the `is()` method to conditionally chain methods to a specific resource types. Use the key configuration in `config/media.php` for matching or fully qualified class name. 
 
 ```php
 use Actengage\Media\Facades\Resource;
+use Actengage\Media\Resources\Image;
 
 $resource = Resource::request('image')
     // When the resource is an image, make it greyscale.
-    ->when('image', function($resource) {
-        $resource->greyscale()
+    ->is('image', function($resource) {
+        $resource->greyscale();
+    })
+    // You may also use the literal class as a match...
+    ->is(Image::class, function($resource) {
+        $resource->greyscale();
     })
     // When the resource is a file, do something else...
-    ->when('file', function($resource) {
+    ->is('file', function($resource) {
         // Do something here...
     });
 ```
+
+You may also need to check for `true` and `false` values before executing code on a resource. For these scenarios, you may use `when()` and `not()` methods to conditionally chain methods to the resource.
+
+```php
+use Actengage\Media\Facades\Resource;
+use Actengage\Media\Resources\Image;
+
+$resource = Resource::request('image')
+    // When the value is `true` execute the callback.
+    ->when(true, function($resource) {
+        // This will only be called when `true` is passed to the first argument.
+    })
+    // You may also use a callback to check for a `true` value.
+    ->when(function($resource) {
+        return true;
+    }, function($resource) {
+        // This will only be called when `true` is returned from the first callback.
+    })
+    // When the value is `false` execute the callback.
+    ->not(false, function($resource) {
+        // This will only be called when `false` is passed to the first argument.
+    })
+    // You may also use a callback to check for a `false` value.
+    ->not(function($resource) {
+        return false;
+    }, function($resource) {
+        // This will only be called when `false` is returned from the first callback.
+    });
 
 ## Resource Context, Meta, Tags
 

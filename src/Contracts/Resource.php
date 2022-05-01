@@ -80,6 +80,16 @@ interface Resource
     public function initialize(mixed $data);
 
     /**
+     * Add an `is` callback resolver that executes when the resource matches
+     * the key(s).
+     *
+     * @param array|string $key
+     * @param Closure $fn
+     * @return self
+     */
+    public function is(array|string $key, Closure $fn): self;
+
+    /**
      * Set the `meta` property.
      *
      * @param array|string $key
@@ -95,6 +105,16 @@ interface Resource
      * @return self
      */
     public function mime(string $value): self;
+
+    /**
+     * Add an `not` callback resolver that executes if the condition is
+     * `false`.
+     *
+     * @param Closure|boolean $value
+     * @param Closure $fn
+     * @return self
+     */
+    public function not(Closure|bool $value, Closure $fn): self;
 
     /**
      * Store the resource on the disk.
@@ -143,18 +163,19 @@ interface Resource
     public function title(string $value): self;
 
     /**
+     * Add an `when` callback resolver that executes if the condition is
+     * `true`.
+     *
+     * @param Closure|boolean $value
+     * @param Closure $fn
+     * @return self
+     */
+    public function when(Closure|bool $value, Closure $fn): self;
+
+    /**
      * Get the instance as an array.
      *
      * @return array<TKey, TValue>
      */
     public function toArray();
-
-    /**
-     * Add a `when` callback resolver.
-     *
-     * @param array|string $key
-     * @param Closure $fn
-     * @return self
-     */
-    public function when(array|string $key, Closure $fn): self;
 }

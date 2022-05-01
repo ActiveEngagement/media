@@ -17,6 +17,13 @@ abstract class Plugin implements PluginInterface
     protected static array $ignoreResources = [];
 
     /**
+     * The only resources that are compatible with the plugin.
+     *
+     * @var array
+     */
+    protected static array $compatibleResources = [];
+
+    /**
      * The plugin options.
      *
      * @var Collection
@@ -44,13 +51,42 @@ abstract class Plugin implements PluginInterface
     }
     
     /**
-     * Verify a resource against the ignored resources.
+     * Verify a resource against the compatible and ignored resources.
      *
      * @return boolean
      */
     public function verifyResource(Resource $resource): bool
     {
-        return !in_array(get_class($resource), static::ignoredResources());
+        return $this->verifyCompatibleResources($resource)
+            && $this->verifyIgnoredResources($resource);
+    }
+    
+    /**
+     * Verify a resource against the compatible resources.
+     *
+     * @return boolean
+     */
+    protected function verifyCompatibleResources(Resource $resource): bool
+    {
+        if(!count($resources = static::compatibleResources())) {
+            return true;
+        }
+
+        return in_array(get_class($resource), $resources);
+    }
+    
+    /**
+     * Verify a resource against the ignored resources.
+     *
+     * @return boolean
+     */
+    protected function verifyIgnoredResources(Resource $resource): bool
+    {
+        if(!count($resources = static::ignoreResources())) {
+            return true;
+        }
+
+        return !in_array(get_class($resource), $resources);
     }
 
     /**
@@ -139,9 +175,19 @@ abstract class Plugin implements PluginInterface
      *
      * @return array
      */
-    public static function ignoredResources(): array
+    public static function ignoreResources(): array
     {
         return static::$ignoreResources;
+    }
+
+    /**
+     * Get the resources that are ignored by the plugin.
+     *
+     * @return array
+     */
+    public static function compatibleResources(): array
+    {
+        return static::$compatibleResources;
     }
 
     /**

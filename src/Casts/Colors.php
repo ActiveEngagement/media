@@ -20,7 +20,9 @@ class Colors implements CastsAttributes
     public function get($model, $key, $value, $attributes)
     {
         return (new Collection($value))->map(function($color) {
-            return new Color(...$color);
+            list($red, $green, $blue) = sscanf($color, "#%02x%02x%02x");
+
+            return new Color($red, $green, $blue);
         });
     }
  
@@ -35,6 +37,6 @@ class Colors implements CastsAttributes
      */
     public function set($model, $key, $value, $attributes)
     {
-        return (new Collection($value))->map->getArray()->toArray();
+        return (new Collection($value))->map->getHex('#')->toArray();
     }
 }

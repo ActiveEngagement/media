@@ -5,6 +5,13 @@ namespace Actengage\Media\Plugins;
 use Actengage\Media\Contracts\Resource;
 use Illuminate\Support\Str;
 
+/**
+ * Hashes the resource filename using the sha1 algorithm.
+ * 
+ * Available Options:
+ * 
+ * @var mixed $length The length of the hash. Defaults to 8.
+ */
 class HashFilename extends Plugin
 {
     /**

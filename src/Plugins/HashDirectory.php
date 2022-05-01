@@ -6,6 +6,13 @@ use Actengage\Media\Contracts\Resource;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
+/**
+ * Hashes the resource directory using the sha1 algorithm.
+ * 
+ * Available Options:
+ * 
+ * @var mixed $length The length of the hash. Defaults to 8.
+ */
 class HashDirectory extends Plugin
 {
     /**

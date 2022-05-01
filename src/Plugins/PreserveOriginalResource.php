@@ -8,6 +8,14 @@ use Actengage\Media\Resources\OriginalResource;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
 
+/**
+ * Preserves the original data as a child to the resource being created.
+ * 
+ * Available Options:
+ * 
+ * @var string filename The format of the filename of the original resource.
+ *                      Defaults to '{{ $filename }}_{{ $hash }}.{{ $extension }}'.
+ */
 class PreserveOriginalResource extends Plugin
 {
     /**

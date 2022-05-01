@@ -27,6 +27,18 @@ class ResourceFactory
     }
 
     /**
+     * Run the `boot()` methods on the applicable resources.
+     *
+     * @return void
+     */
+    public function boot(): void
+    {
+        foreach($this->resources as $resource) {
+            $resource::boot();
+        }
+    }
+
+    /**
      * Configure the resources.
      *
      * @param array $resources

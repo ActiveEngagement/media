@@ -6,9 +6,6 @@ use Actengage\Media\Data\Stream;
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\Media;
 use Actengage\Media\Resources\File;
-use Actengage\Media\Resources\Image;
-use Actengage\Media\Support\ExifCoordinates;
-use Actengage\Media\Support\ExifData;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 

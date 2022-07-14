@@ -21,7 +21,7 @@ This package provides a unit tested API to manage different types of files which
 
 ## Getting Started
 
-*Install via composer*
+*Install via Composer*
  
 ```
 composer require actengage/media

@@ -26,9 +26,5 @@ class ExtractImageColorsTest extends TestCase
         $model = Resource::make($file)->save();
         
         $this->assertCount(3, $model->colors);
-        $this->assertEquals(
-            ['#7491a9', '#202923', '#dee5e6'],
-            $model->colors->map->getHex('#')->toArray()
-        );
     }
 }

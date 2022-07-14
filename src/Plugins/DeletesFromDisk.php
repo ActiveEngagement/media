@@ -7,12 +7,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Preserves the original data as a child to the resource being created.
- * 
- * Available Options:
- * 
- * @var string filename The format of the filename of the original resource.
- *                      Defaults to '{{ $filename }}_{{ $hash }}.{{ $extension }}'.
+ * Deletes the underlying file on disk when a Media record is deleted.
  */
 class DeletesFromDisk extends Plugin
 {

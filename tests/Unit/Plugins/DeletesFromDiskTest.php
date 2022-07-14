@@ -4,17 +4,17 @@ namespace Tests\Unit\Plugins;
 
 use Actengage\Media\Facades\Plugin;
 use Actengage\Media\Facades\Resource;
-use Actengage\Media\Plugins\DeletableFromDisk;
+use Actengage\Media\Plugins\DeletesFromDisk;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
-class DeletableFromDiskTest extends TestCase
+class DeletesFromDiskTest extends TestCase
 {
     public function testDeletableFromDiskTest()
     {
         Plugin::register([
-            DeletableFromDisk::class
+            DeletesFromDisk::class
         ]);
 
         $file = new UploadedFile(

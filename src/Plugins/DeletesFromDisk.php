@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
  * @var string filename The format of the filename of the original resource.
  *                      Defaults to '{{ $filename }}_{{ $hash }}.{{ $extension }}'.
  */
-class DeletableFromDisk extends Plugin
+class DeletesFromDisk extends Plugin
 {
     public static function boot(Collection $options): void
     {

@@ -37,7 +37,7 @@ class FileTest extends TestCase
         $this->assertEquals('/storage/files/file.txt', $model->url);
 
         // Ensure that by default files on disk are not deleted when the Media record is. That behavior is reserved for
-        // the DeletableFromDisk plugin.
+        // the DeletesFromDisk plugin.
 
         $this->assertTrue($model->delete());
         Storage::disk('public')->assertExists('files/file.txt');

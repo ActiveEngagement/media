@@ -42,7 +42,7 @@ class ImageTest extends TestCase
         $this->assertInstanceOf(ExifCoordinates::class, $model->exif->coordinates());
 
         // Ensure that by default files on disk are not deleted when the Media record is. That behavior is reserved for
-        // the DeletableFromDisk plugin.
+        // the DeletesFromDisk plugin.
 
         $this->assertTrue($model->delete());
         Storage::disk('public')->assertExists('images/image.jpeg');

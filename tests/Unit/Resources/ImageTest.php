@@ -10,6 +10,7 @@ use Actengage\Media\Support\ExifData;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+use Tests\Unit\Support\DummyFilesystem;
 
 class ImageTest extends TestCase
 {
@@ -46,5 +47,32 @@ class ImageTest extends TestCase
 
         $this->assertTrue($model->delete());
         Storage::disk('public')->assertExists('images/image.jpeg');
+    }
+
+    public function testSavePassesStorageOptions()
+    {
+        $fs = new DummyFilesystem;
+        Storage::shouldReceive('disk')->andReturn($fs);
+        
+        $file = new UploadedFile(
+            __DIR__.'/../../src/image.jpeg', 'image.jpeg'
+        );
+
+        Resource::make($file)
+            ->disk('public')
+            ->directory('images')
+            ->storageOptions([
+                'example' => true,
+                'config' => 'two'
+            ])
+            ->save();
+        
+        $this->assertEquals(
+            [
+                'example' => true,
+                'config' => 'two'
+            ],
+            $fs->options
+        );
     }
 }

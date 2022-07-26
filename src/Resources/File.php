@@ -50,7 +50,7 @@ class File extends Resource
     public function store(Media $model): bool
     {
         return Storage::disk($model->disk)->writeStream(
-            $model->relative_path, $this->stream->resource()
+            $model->relative_path, $this->stream->resource(), $this->getStorageOptionsArray()
         );
     }
 

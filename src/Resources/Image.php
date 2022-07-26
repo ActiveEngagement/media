@@ -170,7 +170,7 @@ class Image extends Resource
         ));
 
         return Storage::disk($model->disk)->writeStream(
-            $model->relative_path, $stream->resource()
+            $model->relative_path, $stream->resource(), $this->getStorageOptionsArray()
         );
     }
 

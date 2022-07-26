@@ -200,4 +200,15 @@ class ResourceTest extends TestCase
         $this->assertTrue($resource->save()->exists);
     }
 
+    public function testTagsCorrectlySetsTaggingStorageOption()
+    {
+        $resource = Resource::path(__DIR__.'/../../src/file.txt')
+            ->tags(['a', 'b', 'c']);
+        
+        $this->assertEquals(
+            'a=true&b=true&c=true',
+            $resource->storageOptions->get('Tagging')
+        );
+    }
+
 }

@@ -111,6 +111,25 @@ abstract class Resource implements ResourceInterface, Arrayable
     public ?string $title = null;
 
     /**
+     * The storage options.
+     * 
+     * An array of options to be passed to Laravel's `Storage` facade.
+     * 
+     * For example, when using Amazon S3, a `Tagging` option may be used to set S3 tags:
+     * 
+     * ```php
+     * Resouce::make(...)
+     *   ->storageOptions([
+     *     'Tagging' => 'category=image'
+     *   ])
+     *   ->save();
+     * ```
+     * 
+     * Note that these options will not be persisted to the database.
+     */
+    public ?Collection $storageOptions = null;
+
+    /**
      * Create a new resource instance.
      *
      * @param mixed $data
@@ -393,6 +412,32 @@ abstract class Resource implements ResourceInterface, Arrayable
     }
 
     /**
+     * Set the storage options passed to `Storage`.
+     */
+    public function storageOptions(array $values): self
+    {
+        if(!$this->storageOptions) {
+            $this->storageOptions = collect();
+        }
+
+        $this->storageOptions = $this->storageOptions->merge($values);
+
+        return $this;
+    }
+
+    /**
+     * Gets an array of storage options.
+     * 
+     * Converts `$this->storageOptions` to an array if it exists, or returns an empty array otherwise.
+     * 
+     * @return array
+     */
+    public function getStorageOptionsArray(): array
+    {
+        return $this->storageOptions ? $this->storageOptions->toArray() : [];
+    }
+
+    /**
      * Save the resource and return a model.
      *
      * @return Media|boolean
@@ -445,6 +490,10 @@ abstract class Resource implements ResourceInterface, Arrayable
             (new Collection($values))->flatten(1)
         );
 
+        if ($this->tags->isNotEmpty()) {
+            $this->storageOptions([ 'Tagging' => $this->getS3TagString($this->tags) ]);
+        }
+
         return $this;
     }
 
@@ -490,6 +539,30 @@ abstract class Resource implements ResourceInterface, Arrayable
                 return [$property->getName() => $value];
             })
             ->all();
+    }
+
+    /**
+     * Converts a list of tags to an S3 tag string.
+     * 
+     * Converts the given `Collection` of single "tags" into an S3-compatible key-value query string where each tag is
+     * set to `'true'`.
+     * 
+     * For example:
+     * 
+     * ```php
+     * $tags = collect(['one', 'two', 'three']);
+     * $this->getS3TagString($tags); // => "one=true&two=true&three=true"
+     * ```
+     * 
+     * @param Collection $tags
+     * @return string
+     */
+    protected function getS3TagString(Collection $tags): string
+    {
+        $associativeTags = $tags->mapWithKeys(fn ($tag) => [$tag => 'true']);
+        $queryString = http_build_query($associativeTags->toArray());
+
+        return $queryString;
     }
 
 

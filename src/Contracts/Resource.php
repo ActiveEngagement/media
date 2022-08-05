@@ -163,6 +163,11 @@ interface Resource
     public function title(string $value): self;
 
     /**
+     * Set the storage options passed to `Storage`.
+     */
+    public function storageOptions(array $values): self;
+
+    /**
      * Add an `when` callback resolver that executes if the condition is
      * `true`.
      *

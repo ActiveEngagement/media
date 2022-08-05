@@ -8,7 +8,9 @@ use Actengage\Media\Resources\Image;
 use Actengage\Media\Support\ExifCoordinates;
 use Actengage\Media\Support\ExifData;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+use Tests\Unit\Support\DummyFilesystem;
 
 class ImageTest extends TestCase
 {
@@ -39,5 +41,38 @@ class ImageTest extends TestCase
         $this->assertEquals('/storage/images/image.jpeg', $model->url);
         $this->assertInstanceOf(ExifData::class, $model->exif);
         $this->assertInstanceOf(ExifCoordinates::class, $model->exif->coordinates());
+
+        // Ensure that by default files on disk are not deleted when the Media record is. That behavior is reserved for
+        // the DeletesFromDisk plugin.
+
+        $this->assertTrue($model->delete());
+        Storage::disk('public')->assertExists('images/image.jpeg');
+    }
+
+    public function testSavePassesStorageOptions()
+    {
+        $fs = new DummyFilesystem;
+        Storage::shouldReceive('disk')->andReturn($fs);
+        
+        $file = new UploadedFile(
+            __DIR__.'/../../src/image.jpeg', 'image.jpeg'
+        );
+
+        Resource::make($file)
+            ->disk('public')
+            ->directory('images')
+            ->storageOptions([
+                'example' => true,
+                'config' => 'two'
+            ])
+            ->save();
+        
+        $this->assertEquals(
+            [
+                'example' => true,
+                'config' => 'two'
+            ],
+            $fs->options
+        );
     }
 }

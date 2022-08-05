@@ -118,9 +118,15 @@ abstract class Resource implements ResourceInterface, Arrayable
      */
     public function __construct(mixed $data = null)
     {        
+        $this->disk = $this->disk ?? config('filesystems.default');
+
         if($data) {
             $this->initialize($data);
         }
+
+        $this->plugins = Plugin::initialize($this);
+        $this->fireEvent('initialized');
+        $this->resolvePluginMethod('initialized');
     }
 
     /**
@@ -289,10 +295,7 @@ abstract class Resource implements ResourceInterface, Arrayable
      */
     public function initialize(mixed $data)
     {
-        $this->disk = $this->disk ?? config('filesystems.default');
-        $this->plugins = Plugin::initialize($this);
-        $this->fireEvent('initialized');
-        $this->resolvePluginMethod('initialized');
+        //
     }
 
     /**

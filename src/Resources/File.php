@@ -37,8 +37,6 @@ class File extends Resource
                 $e->getMessage(), $e->getCode(), $e
             );
         }
-
-        parent::initialize($data);
     }
 
     /**

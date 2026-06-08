@@ -11,6 +11,7 @@ use Actengage\Media\Support\HasEvents;
 use Actengage\Media\Support\HasPlugins;
 use Closure;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Events\QueuedClosure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Traits\Macroable;
@@ -18,105 +19,90 @@ use Psr\Http\Message\StreamInterface;
 use ReflectionClass;
 use ReflectionProperty;
 
-abstract class Resource implements ResourceInterface, Arrayable
+/**
+ * @phpstan-consistent-constructor
+ *
+ * @implements Arrayable<string, mixed>
+ */
+abstract class Resource implements Arrayable, ResourceInterface
 {
     use Attributes, HasEvents, HasPlugins, Macroable {
-		Attributes::__call as __callAttributes;
+        Attributes::__call as __callAttributes;
         Macroable::__call as __callMacros;
         Macroable::__callStatic as __callStaticMacros;
-	}
+    }
 
     /**
      * The caption for the resource.
-     *
-     * @var string|null
      */
     public ?string $caption = null;
 
     /**
      * The context for the resource.
-     *
-     * @var string|null
      */
     public ?string $context = null;
 
     /**
      * The storage directory.
-     *
-     * @var string|null
      */
     public ?string $directory = null;
 
     /**
      * The storage disk.
-     *
-     * @var string|null
      */
     public ?string $disk = null;
 
     /**
      * The file extension.
-     *
-     * @var string|null
      */
     public ?string $extension = null;
 
     /**
      * The file name.
-     *
-     * @var string|null
      */
     public ?string $filename = null;
 
     /**
      * The file size.
-     *
-     * @var mixed
      */
     public mixed $filesize = 0;
 
     /**
      * The resource meta data.
      *
-     * @var ?Collection
+     * @var Collection<array-key, mixed>|null
      */
     public ?Collection $meta = null;
 
     /**
      * The mime type.
-     *
-     * @var string|null
      */
     public ?string $mime = null;
 
     /**
      * The parent model.
-     *
-     * @var Media|null
      */
     public ?Media $parent = null;
 
     /**
      * The resource tags.
      *
-     * @var ?Collection
+     * @var Collection<array-key, mixed>|null
      */
     public ?Collection $tags = null;
 
     /**
      * The resource title.
-     *
-     * @var string|null
      */
     public ?string $title = null;
 
     /**
      * The storage options.
-     * 
+     *
      * An array of options to be passed to Laravel's `Storage` facade.
-     * 
+     *
      * For example, when using Amazon S3, a `Tagging` option may be used to set S3 tags:
-     * 
+     *
      * ```php
      * Resouce::make(...)
      *   ->storageOptions([
@@ -124,22 +110,25 @@ abstract class Resource implements ResourceInterface, Arrayable
      *   ])
      *   ->save();
      * ```
-     * 
+     *
      * Note that these options will not be persisted to the database.
+     *
+     * @var Collection<array-key, mixed>|null
      */
     public ?Collection $storageOptions = null;
 
     /**
      * Create a new resource instance.
-     *
-     * @param mixed $data
-     * @return void
      */
     public function __construct(mixed $data = null)
-    {        
-        $this->disk = $this->disk ?? config('filesystems.default');
+    {
+        if ($this->disk === null) {
+            $default = config('filesystems.default');
 
-        if($data) {
+            $this->disk = is_string($default) ? $default : null;
+        }
+
+        if ($data) {
             $this->initialize($data);
         }
 
@@ -151,19 +140,23 @@ abstract class Resource implements ResourceInterface, Arrayable
     /**
      * Bind events to the dispatcher if the method doesn't exist.
      *
-     * @param string $name
-     * @param array $arguments
+     * @param  string  $name
+     * @param  array<array-key, mixed>  $arguments
      * @return mixed
      */
     public function __call($name, $arguments)
     {
-        if(static::hasMacro($name)) {
+        if (static::hasMacro($name)) {
             return $this->__callMacros($name, $arguments);
         }
 
-        if($this->isObservableEvent($name)) {
-            static::registerEvent($name, ...$arguments);
-            
+        if ($this->isObservableEvent($name)) {
+            $callback = $arguments[0] ?? null;
+
+            if ($callback instanceof Closure || $callback instanceof QueuedClosure || is_string($callback)) {
+                static::registerEvent($name, $callback);
+            }
+
             return $this;
         }
 
@@ -173,25 +166,30 @@ abstract class Resource implements ResourceInterface, Arrayable
     /**
      * Bind events to the dispatcher if the static method doesn't exist.
      *
-     * @param string $name
-     * @param array $arguments
+     * @param  string  $name
+     * @param  array<array-key, mixed>  $arguments
      * @return mixed
      */
     public static function __callStatic($name, $arguments)
     {
-        if(static::hasMacro($name)) {
+        if (static::hasMacro($name)) {
             return static::__callStaticMacros($name, $arguments);
         }
-        
-        static::registerEvent($name, ...$arguments);
+
+        $callback = $arguments[0] ?? null;
+
+        if ($callback instanceof Closure || $callback instanceof QueuedClosure || is_string($callback)) {
+            static::registerEvent($name, $callback);
+        }
     }
 
     /**
      * Get the model attributes.
      *
-     * @return array
+     * @param  array<string, mixed>  ...$overrides
+     * @return array<string, mixed>
      */
-    public function attributes(): array
+    public function attributes(array ...$overrides): array
     {
         return array_merge([
             'caption' => $this->caption,
@@ -205,67 +203,52 @@ abstract class Resource implements ResourceInterface, Arrayable
             'mime' => $this->mime,
             'tags' => $this->tags,
             'title' => $this->title,
-        ], ...func_get_args());
+        ], ...$overrides);
     }
 
     /**
      * Set the `caption` attribute.
-     *
-     * @param string $value
-     * @return self
      */
     public function caption(string $value): self
     {
-        return $this->attribute('caption', $value);
+        return $this->setAttribute('caption', $value);
     }
 
     /**
      * Set the `context` attribute.
-     *
-     * @param string $value
-     * @return self
      */
     public function context(string $value): self
     {
-        return $this->attribute('context', $value);
+        return $this->setAttribute('context', $value);
     }
 
     /**
      * Set the `directory` attribute.
-     *
-     * @param string $value
-     * @return self
      */
     public function directory(string $value): self
     {
-        return $this->attribute('directory', $value);
+        return $this->setAttribute('directory', $value);
     }
 
     /**
      * Set the `disk` attribute.
-     *
-     * @param string $value
-     * @return self
      */
     public function disk(string $value): self
     {
-        return $this->attribute('disk', $value);
+        return $this->setAttribute('disk', $value);
     }
 
     /**
      * Set the `extension` attribute.
-     *
-     * @param string $value
-     * @return self
      */
     public function extension(string $value): self
     {
         $extension = $this->extension;
-        
+
         $this->attribute('extension', $value);
 
-        if($extension !== $value) {
-            $this->attribute('filename', preg_replace("/\.$extension$/", ".{$value}", $this->filename));
+        if ($extension !== $value) {
+            $this->attribute('filename', preg_replace("/\.$extension$/", ".{$value}", (string) $this->filename));
         }
 
         return $this;
@@ -273,16 +256,13 @@ abstract class Resource implements ResourceInterface, Arrayable
 
     /**
      * Set the `filename` attribute.
-     *
-     * @param string $value
-     * @return self
      */
     public function filename(string $value): self
     {
-        if($extension = pathinfo($value, PATHINFO_EXTENSION)) {
+        $extension = pathinfo($value, PATHINFO_EXTENSION);
+        if ($extension !== '' && $extension !== '0') {
             $this->attribute('extension', $extension);
-        }
-        else {
+        } else {
             $value = sprintf('%s.%s', $value, $this->extension);
         }
 
@@ -294,22 +274,20 @@ abstract class Resource implements ResourceInterface, Arrayable
     /**
      * Set the `filesize` attribute.
      *
-     * @param mixed $value
-     * @return self
+     * @param  mixed  $value
      */
     public function filesize($value): self
     {
-        if($value instanceof StreamInterface) {
+        if ($value instanceof StreamInterface) {
             $value = $value->getSize();
         }
 
-        return $this->attribute('filesize', $value);
+        return $this->setAttribute('filesize', $value);
     }
 
     /**
      * Initialize the resource.
      *
-     * @param mixed $data
      * @return void
      */
     public function initialize(mixed $data)
@@ -320,14 +298,13 @@ abstract class Resource implements ResourceInterface, Arrayable
     /**
      * Add an `is` callback resolver that executes when the resource matches
      * the key(s).
-     *
-     * @param array|string $key
-     * @param Closure $fn
-     * @return self
+     */
+    /**
+     * @param  array<array-key, string>|string  $key
      */
     public function is(array|string $key, Closure $fn): self
     {
-        if(ResourceFactory::is($this, $key)) {
+        if (ResourceFactory::is($this, $key)) {
             call_user_func($fn, $this);
         }
 
@@ -337,20 +314,18 @@ abstract class Resource implements ResourceInterface, Arrayable
     /**
      * Set the `meta` property.
      *
-     * @param array|string $key
-     * @param mixed $value
-     * @return self
+     * @param  array<array-key, mixed>|string  $key
+     * @param  mixed  $value
      */
     public function meta(array|string $key, $value = null): self
     {
-        if(!isset($this->meta)) {
-            $this->meta = new Collection();
+        if (! $this->meta instanceof Collection) {
+            $this->meta = new Collection;
         }
 
-        if(is_array($key)) {
+        if (is_array($key)) {
             $this->meta = $this->meta->merge($key);
-        }
-        else {
+        } else {
             $this->meta->put($key, $value);
         }
 
@@ -359,30 +334,23 @@ abstract class Resource implements ResourceInterface, Arrayable
 
     /**
      * Set the `mime` attribute.
-     *
-     * @param string $value
-     * @return self
      */
     public function mime(string $value): self
     {
-        return $this->attribute('mime', $value);
+        return $this->setAttribute('mime', $value);
     }
 
     /**
      * Add an `not` callback resolver that executes if the condition is
      * `false`.
-     *
-     * @param Closure|boolean $value
-     * @param Closure $fn
-     * @return self
      */
     public function not(Closure|bool $value, Closure $fn): self
     {
-        if($value instanceof Closure) {
+        if ($value instanceof Closure) {
             $value = call_user_func($value, $this);
         }
-        
-        if($value === false) {
+
+        if ($value === false) {
             call_user_func($fn, $this);
         }
 
@@ -391,32 +359,28 @@ abstract class Resource implements ResourceInterface, Arrayable
 
     /**
      * Associate a parent model to the resource.
-     *
-     * @param Media|null $model
-     * @return self
      */
     public function parent(?Media $model): self
     {
-        return $this->attribute('parent', $model);
+        return $this->setAttribute('parent', $model);
     }
 
     /**
      * Set the `title` attribute.
-     *
-     * @param string $value
-     * @return self
      */
     public function title(string $value): self
     {
-        return $this->attribute('title', $value);
+        return $this->setAttribute('title', $value);
     }
 
     /**
      * Set the storage options passed to `Storage`.
+     *
+     * @param  array<array-key, mixed>  $values
      */
     public function storageOptions(array $values): self
     {
-        if(!$this->storageOptions) {
+        if (! $this->storageOptions instanceof Collection) {
             $this->storageOptions = collect();
         }
 
@@ -427,30 +391,28 @@ abstract class Resource implements ResourceInterface, Arrayable
 
     /**
      * Gets an array of storage options.
-     * 
+     *
      * Converts `$this->storageOptions` to an array if it exists, or returns an empty array otherwise.
-     * 
-     * @return array
+     *
+     * @return array<array-key, mixed>
      */
     public function getStorageOptionsArray(): array
     {
-        return $this->storageOptions ? $this->storageOptions->toArray() : [];
+        return $this->storageOptions instanceof Collection ? $this->storageOptions->toArray() : [];
     }
 
     /**
      * Save the resource and return a model.
-     *
-     * @return Media|boolean
      */
-    public function save(): Media|bool
+    public function save(): Media
     {
-        return DB::transaction(function() {
+        return DB::transaction(function () {
             $this->fireEvent('beforeSaving');
             $this->resolvePluginMethod('beforeSaving');
 
             $model = app()->make(Media::class, $this->attributes());
 
-            if($this->parent) {
+            if ($this->parent instanceof Media) {
                 $model->parent()->associate($this->parent);
             }
 
@@ -477,13 +439,12 @@ abstract class Resource implements ResourceInterface, Arrayable
     /**
      * Set the `tags` property.
      *
-     * @param string[] ...$values
-     * @return self
+     * @param  string|string[]  ...$values
      */
     public function tags(...$values): self
     {
-        if(!isset($this->tags)) {
-            $this->tags = new Collection();
+        if (! $this->tags instanceof Collection) {
+            $this->tags = new Collection;
         }
 
         $this->tags = $this->tags->merge(
@@ -491,7 +452,7 @@ abstract class Resource implements ResourceInterface, Arrayable
         );
 
         if ($this->tags->isNotEmpty()) {
-            $this->storageOptions([ 'Tagging' => $this->getS3TagString($this->tags) ]);
+            $this->storageOptions(['Tagging' => $this->getS3TagString($this->tags)]);
         }
 
         return $this;
@@ -500,18 +461,14 @@ abstract class Resource implements ResourceInterface, Arrayable
     /**
      * Add an `when` callback resolver that executes if the condition is
      * `true`.
-     *
-     * @param Closure|boolean $value
-     * @param Closure $fn
-     * @return self
      */
     public function when(Closure|bool $value, Closure $fn): self
     {
-        if($value instanceof Closure) {
+        if ($value instanceof Closure) {
             $value = call_user_func($value, $this);
         }
-        
-        if($value === true) {
+
+        if ($value === true) {
             call_user_func($fn, $this);
         }
 
@@ -521,7 +478,7 @@ abstract class Resource implements ResourceInterface, Arrayable
     /**
      * Get the instance as an array.
      *
-     * @return array<TKey, TValue>
+     * @return array<string, mixed>
      */
     public function toArray()
     {
@@ -529,10 +486,10 @@ abstract class Resource implements ResourceInterface, Arrayable
             ->getProperties(ReflectionProperty::IS_PUBLIC);
 
         return collect($properties)
-            ->mapWithKeys(function($property) {
+            ->mapWithKeys(function ($property) {
                 $value = $property->getValue($this);
 
-                if($value instanceof Arrayable) {
+                if ($value instanceof Arrayable) {
                     $value = $value->toArray();
                 }
 
@@ -543,28 +500,25 @@ abstract class Resource implements ResourceInterface, Arrayable
 
     /**
      * Converts a list of tags to an S3 tag string.
-     * 
+     *
      * Converts the given `Collection` of single "tags" into an S3-compatible key-value query string where each tag is
      * set to `'true'`.
-     * 
+     *
      * For example:
-     * 
+     *
      * ```php
      * $tags = collect(['one', 'two', 'three']);
      * $this->getS3TagString($tags); // => "one=true&two=true&three=true"
      * ```
-     * 
-     * @param Collection $tags
-     * @return string
+     *
+     * @param  Collection<array-key, mixed>  $tags
      */
     protected function getS3TagString(Collection $tags): string
     {
-        $associativeTags = $tags->mapWithKeys(fn ($tag) => [$tag => 'true']);
-        $queryString = http_build_query($associativeTags->toArray());
+        $associativeTags = $tags->mapWithKeys(fn ($tag) => [is_scalar($tag) ? (string) $tag : '' => 'true']);
 
-        return $queryString;
+        return http_build_query($associativeTags->toArray());
     }
-
 
     /**
      * Boot the resource.
@@ -579,10 +533,9 @@ abstract class Resource implements ResourceInterface, Arrayable
     /**
      * Create a new instance of the resource.
      *
-     * @param mixed ...$args
-     * @return self
+     * @param  mixed  ...$args
      */
-    public static function make(...$args)
+    public static function make(...$args): static
     {
         return new static(...$args);
     }

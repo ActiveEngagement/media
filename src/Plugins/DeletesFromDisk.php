@@ -11,9 +11,12 @@ use Illuminate\Support\Facades\Storage;
  */
 class DeletesFromDisk extends Plugin
 {
+    /**
+     * @param  Collection<array-key, mixed>  $options
+     */
     public static function boot(Collection $options): void
     {
-        Media::deleting(function($media) {
+        Media::deleting(function (Media $media) {
             Storage::disk($media->disk)->delete($media->relative_path);
         });
     }

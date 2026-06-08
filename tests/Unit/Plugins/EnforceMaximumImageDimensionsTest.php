@@ -1,52 +1,59 @@
 <?php
 
-namespace Tests\Unit\Plugins;
-
-use Actengage\Media\Exceptions\BadAttributeException;
 use Actengage\Media\Facades\Plugin;
 use Actengage\Media\Facades\Resource;
+use Actengage\Media\Media;
 use Actengage\Media\Plugins\EnforceMaximumImageDimensions;
+use Actengage\Media\Resources\Image;
 use Illuminate\Http\UploadedFile;
-use Tests\TestCase;
 
-class EnforceMaximumImageDimensionsTest extends TestCase
-{
-    public function testExtractImageColorsPlugin()
-    {
-        Plugin::register([
-            [EnforceMaximumImageDimensions::class, [
-                'width' => 100,
-                'height' => 100
-            ]]
-        ]);
+it('enforces maximum image dimensions', function (): void {
+    Plugin::register([
+        [EnforceMaximumImageDimensions::class, [
+            'width' => 100,
+            'height' => 100,
+        ]],
+    ]);
 
-        $file = new UploadedFile(
-            __DIR__.'/../../src/image.jpeg', 'image.jpeg'
-        );
+    $file = new UploadedFile(
+        __DIR__.'/../../src/image.jpeg', 'image.jpeg'
+    );
 
-        $resource = Resource::make($file);
+    $resource = Image::make($file);
 
-        $this->assertEquals(100, $resource->image()->width());
-        $this->assertEquals(75, $resource->image()->height());
-    }
+    expect($resource->image()->width())->toBe(100);
+    expect($resource->image()->height())->toBe(75);
+});
 
-    public function testRegisteringPluginToFile()
-    {
-        Plugin::register([
-            EnforceMaximumImageDimensions::class
-        ]);
+it('upsizes when the upsize option is enabled', function (): void {
+    Plugin::register([
+        [EnforceMaximumImageDimensions::class, [
+            'width' => 100,
+            'height' => 100,
+            'aspectRatio' => false,
+            'upsize' => true,
+        ]],
+    ]);
 
-        $file = new UploadedFile(
-            __DIR__.'/../../src/file.txt', 'file.txt'
-        );
+    $file = new UploadedFile(
+        __DIR__.'/../../src/image.jpeg', 'image.jpeg'
+    );
 
-        try {
-            Resource::make($file)->save();
-        }
-        catch(BadAttributeException $e) {
-            $this->addToAssertionCount(1);
-        }
+    $resource = Image::make($file);
 
-        $this->expectNotToPerformAssertions();
-    }
-}
+    expect($resource->image()->width())->toBe(100);
+    expect($resource->image()->height())->toBe(100);
+});
+
+it('ignores incompatible resources', function (): void {
+    Plugin::register([
+        EnforceMaximumImageDimensions::class,
+    ]);
+
+    $file = new UploadedFile(
+        __DIR__.'/../../src/file.txt', 'file.txt'
+    );
+
+    expect(Resource::make($file)->save())
+        ->toBeInstanceOf(Media::class);
+});

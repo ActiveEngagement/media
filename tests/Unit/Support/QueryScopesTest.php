@@ -1,117 +1,115 @@
 <?php
 
-namespace Tests\Unit\Support;
-
-use Actengage\Media\Facades\Resource;
 use Actengage\Media\Media;
-use Tests\TestCase;
+use Illuminate\Database\Eloquent\Builder;
 
-class QueryScopesTest extends TestCase
-{
-    protected function setUp(): void
-    {
-        parent::setUp();
-        
-        Resource::make(__DIR__.'/../../src/file.txt')
-            ->disk('local')
-            ->filename('a-1')
-            ->context('a')
-            ->caption('a-1')
-            ->title('a-1')
-            ->save();
-        
-        Resource::make(__DIR__.'/../../src/index.html')
-            ->disk('public')
-            ->filename('a-2')
-            ->context('a')
-            ->caption('a-2')
-            ->title('a-2')
-            ->save();
+beforeEach(function (): void {
+    foreach (['a', 'b', 'c'] as $context) {
+        Media::factory()->createOne([
+            'disk' => 'local',
+            'context' => $context,
+            'filename' => "$context-1.txt",
+            'caption' => "$context-1",
+            'title' => "$context-1",
+            'mime' => 'text/plain',
+            'extension' => 'txt',
+            'filesize' => 25,
+        ]);
 
-        Resource::make(__DIR__.'/../../src/file.txt')
-            ->disk('local')
-            ->filename('b-1')
-            ->context('b')
-            ->caption('b-1')
-            ->title('b-1')
-            ->save();
-
-        Resource::make(__DIR__.'/../../src/index.html')
-            ->disk('public')
-            ->filename('b-2')
-            ->context('b')
-            ->caption('b-2')
-            ->title('b-2')
-            ->save();
-
-        Resource::make(__DIR__.'/../../src/file.txt')
-            ->disk('local')
-            ->filename('c-1')
-            ->context('c')
-            ->caption('c-1')
-            ->title('c-1')
-            ->save();
-
-        Resource::make(__DIR__.'/../../src/index.html')
-            ->disk('public')
-            ->filename('c-2')
-            ->context('c')
-            ->caption('c-2')
-            ->title('c-2')
-            ->save();
+        Media::factory()->createOne([
+            'disk' => 'public',
+            'context' => $context,
+            'filename' => "$context-2.html",
+            'caption' => "$context-2",
+            'title' => "$context-2",
+            'mime' => 'text/html',
+            'extension' => 'html',
+            'filesize' => 286,
+        ]);
     }
+});
 
-    public function testScopeCaption()
-    {
-        $this->assertEquals(1, Media::caption('a-1')->count());
-        $this->assertEquals(2, Media::caption('a-1', 'a-2')->count());
-        $this->assertEquals(2, Media::caption(['a-1', 'a-2'])->count());
-    }
+it('scopes by caption', /** @param array<int, array<string>|string> $args */ function (array $args, int $expected): void {
+    expect(Media::caption(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['a-1'], 1],
+    'multiple' => [['a-1', 'a-2'], 2],
+    'array' => [[['a-1', 'a-2']], 2],
+]);
 
-    public function testScopeContext()
-    {
-        $this->assertEquals(2, Media::context('a')->count());
-        $this->assertEquals(4, Media::context('a', 'b')->count());
-        $this->assertEquals(4, Media::context(['a', 'b'])->count());
-    }
+it('scopes by context', function (array $args, int $expected): void {
+    expect(Media::context(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['a'], 2],
+    'multiple' => [['a', 'b'], 4],
+    'array' => [[['a', 'b']], 4],
+]);
 
-    public function testScopeDisk()
-    {
-        $this->assertEquals(3, Media::disk('local')->count());
-        $this->assertEquals(6, Media::disk('local', 'public')->count());
-        $this->assertEquals(6, Media::disk(['local', 'public'])->count());
-    }
+it('scopes by disk', function (array $args, int $expected): void {
+    expect(Media::disk(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['local'], 3],
+    'multiple' => [['local', 'public'], 6],
+    'array' => [[['local', 'public']], 6],
+]);
 
-    public function testScopeExtension()
-    {
-        $this->assertEquals(3, Media::extension('txt')->count());
-        $this->assertEquals(6, Media::extension('txt', 'html')->count());
-        $this->assertEquals(6, Media::extension(['txt', 'html'])->count());
-    }
+it('scopes by extension', function (array $args, int $expected): void {
+    expect(Media::extension(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['txt'], 3],
+    'multiple' => [['txt', 'html'], 6],
+    'array' => [[['txt', 'html']], 6],
+]);
 
-    public function testScopeFilename()
-    {
-        $this->assertEquals(1, Media::filename('a-1.txt')->count());
-        $this->assertEquals(2, Media::filename('a-1.txt', 'a-2.html')->count());
-        $this->assertEquals(2, Media::filename(['a-1.txt', 'a-2.html'])->count());
-    }
+it('scopes by filename', function (array $args, int $expected): void {
+    expect(Media::filename(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['a-1.txt'], 1],
+    'multiple' => [['a-1.txt', 'a-2.html'], 2],
+    'array' => [[['a-1.txt', 'a-2.html']], 2],
+]);
 
-    public function testScopeFilesize()
-    {
-        $this->assertEquals(3, Media::filesize(25)->count());
-        $this->assertEquals(6, Media::filesize([25, 286])->count());
-    }
+it('scopes by filesize', function (array $args, int $expected): void {
+    expect(Media::filesize(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [[25], 3],
+    'array' => [[[25, 286]], 6],
+]);
 
-    public function testScopeMime()
-    {
-        $this->assertEquals(3, Media::mime('text/plain')->count());
-        $this->assertEquals(6, Media::mime(['text/plain', 'text/html'])->count());
-    }
+it('scopes by mime', function (array $args, int $expected): void {
+    expect(Media::mime(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['text/plain'], 3],
+    'array' => [[['text/plain', 'text/html']], 6],
+]);
 
-    public function testScopeTitle()
-    {
-        $this->assertEquals(1, Media::title('a-1')->count());
-        $this->assertEquals(2, Media::title('a-1', 'a-2')->count());
-        $this->assertEquals(2, Media::title(['a-1', 'a-2'])->count());
-    }
-}
+it('scopes by title', function (array $args, int $expected): void {
+    expect(Media::title(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['a-1'], 1],
+    'multiple' => [['a-1', 'a-2'], 2],
+    'array' => [[['a-1', 'a-2']], 2],
+]);
+
+it('scopes by meta', function (): void {
+    expect(Media::meta(['width' => 10]))->toBeInstanceOf(Builder::class);
+});
+
+it('scopes by tags', function (array $args, int $expected): void {
+    Media::factory()->createOne(['filename' => 'tagged-1.txt', 'tags' => ['red', 'green']]);
+    Media::factory()->createOne(['filename' => 'tagged-2.txt', 'tags' => ['blue']]);
+
+    expect(Media::tag(...$args)->count())->toBe($expected);
+})->with([
+    'single tag' => [['red'], 1],
+    'multiple tags' => [['red', 'blue'], 2],
+    'array of tags' => [[['green']], 1],
+]);
+
+it('scopes without tags', function (): void {
+    Media::factory()->createOne(['filename' => 'tagged-1.txt', 'tags' => ['red', 'green']]);
+    Media::factory()->createOne(['filename' => 'tagged-2.txt', 'tags' => ['blue']]);
+
+    expect(Media::withoutTag('red')->pluck('filename'))->not->toContain('tagged-1.txt');
+    expect(Media::withoutTags(['red', 'green'])->pluck('filename'))->not->toContain('tagged-1.txt');
+});

@@ -1,78 +1,104 @@
 <?php
 
-namespace Tests\Unit\Resources;
-
+use Actengage\Media\Data\Stream;
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\Media;
 use Actengage\Media\Resources\Image;
 use Actengage\Media\Support\ExifCoordinates;
 use Actengage\Media\Support\ExifData;
+use ColorThief\Color;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Tests\TestCase;
+use Psr\Http\Message\StreamInterface;
 use Tests\Unit\Support\DummyFilesystem;
 
-class ImageTest extends TestCase
-{
-    public function testImageResource()
-    {
-        $file = new UploadedFile(
-            __DIR__.'/../../src/image.jpeg', 'image.jpeg'
-        );
+it('creates and stores an image resource', function (): void {
+    $file = new UploadedFile(
+        __DIR__.'/../../src/image.jpeg', 'image.jpeg'
+    );
 
-        $resource = Resource::make($file)
-            ->disk('public')
-            ->directory('images');
+    $resource = Image::make($file);
+    $resource->disk('public')->directory('images');
 
-        $this->assertInstanceOf(Image::class, $resource);
-        $this->assertInstanceOf(\Intervention\Image\Image::class, $resource->image());
-        $this->assertEquals(2933093, $resource->filesize);
-        $this->assertEquals('image/jpeg', $resource->mime);
-        $this->assertEquals('jpeg', $resource->extension);
-        $this->assertInstanceOf(ExifData::class, $resource->exif);
-        
-        $model = $resource->save();
+    expect($resource)->toBeInstanceOf(Image::class);
+    expect($resource->image())->toBeInstanceOf(Intervention\Image\Image::class);
+    expect($resource->filesize)->toBe(2933093);
+    expect($resource->mime)->toBe('image/jpeg');
+    expect($resource->extension)->toBe('jpeg');
+    expect($resource->exif)->toBeInstanceOf(ExifData::class);
 
-        $this->assertInstanceOf(Media::class, $model);
-        $this->assertTrue($model->file_exists);
-        $this->assertEquals(2933093, $model->filesize);
-        $this->assertEquals('jpeg', $model->extension);
-        $this->assertEquals('images/image.jpeg', $model->relative_path);
-        $this->assertEquals('/storage/images/image.jpeg', $model->url);
-        $this->assertInstanceOf(ExifData::class, $model->exif);
-        $this->assertInstanceOf(ExifCoordinates::class, $model->exif->coordinates());
+    $model = $resource->save();
 
-        // Ensure that by default files on disk are not deleted when the Media record is. That behavior is reserved for
-        // the DeletesFromDisk plugin.
+    expect($model)->toBeInstanceOf(Media::class);
+    expect($model->file_exists)->toBeTrue();
+    expect($model->filesize)->toBe(2933093);
+    expect($model->extension)->toBe('jpeg');
+    expect($model->relative_path)->toBe('images/image.jpeg');
+    expect($model->url)->toBe('/storage/images/image.jpeg');
+    expect($model->exif)->toBeInstanceOf(ExifData::class);
+    expect($model->exif->coordinates())->toBeInstanceOf(ExifCoordinates::class);
 
-        $this->assertTrue($model->delete());
-        Storage::disk('public')->assertExists('images/image.jpeg');
-    }
+    // Ensure that by default files on disk are not deleted when the Media record is. That behavior is reserved for
+    // the DeletesFromDisk plugin.
+    expect($model->delete())->toBeTrue();
 
-    public function testSavePassesStorageOptions()
-    {
-        $fs = new DummyFilesystem;
-        Storage::shouldReceive('disk')->andReturn($fs);
-        
-        $file = new UploadedFile(
-            __DIR__.'/../../src/image.jpeg', 'image.jpeg'
-        );
+    Storage::disk('public')->assertExists('images/image.jpeg');
+});
 
-        Resource::make($file)
-            ->disk('public')
-            ->directory('images')
-            ->storageOptions([
-                'example' => true,
-                'config' => 'two'
-            ])
-            ->save();
-        
-        $this->assertEquals(
-            [
-                'example' => true,
-                'config' => 'two'
-            ],
-            $fs->options
-        );
-    }
-}
+it('passes storage options through to the disk', function (): void {
+    $fs = new DummyFilesystem;
+    Storage::shouldReceive('disk')->andReturn($fs);
+
+    $file = new UploadedFile(
+        __DIR__.'/../../src/image.jpeg', 'image.jpeg'
+    );
+
+    Resource::make($file)
+        ->disk('public')
+        ->directory('images')
+        ->storageOptions([
+            'example' => true,
+            'config' => 'two',
+        ])
+        ->save();
+
+    expect($fs->options)->toBe([
+        'example' => true,
+        'config' => 'two',
+    ]);
+});
+
+it('extracts the extension and filename from a stream', function (): void {
+    $resource = Image::make(Stream::make(__DIR__.'/../../src/image.jpeg'));
+
+    expect($resource)->toBeInstanceOf(Image::class);
+    expect($resource->extension)->toBe('jpeg');
+    expect($resource->filename)->toBe('image.jpeg');
+});
+
+it('returns a stream of the image data', function (): void {
+    $resource = Resource::path(__DIR__.'/../../src/image.jpeg');
+
+    expect($resource->stream())->toBeInstanceOf(StreamInterface::class);
+});
+
+it('returns the core image resource', function (): void {
+    $resource = Image::make(__DIR__.'/../../src/image.jpeg');
+
+    expect($resource->core())->not->toBeNull();
+});
+
+it('gets the dominant color of the image', function (): void {
+    $resource = Image::make(__DIR__.'/../../src/image.jpeg');
+
+    expect($resource->color(10))->toBeInstanceOf(Color::class);
+});
+
+it('sets the exif data fluently', function (): void {
+    $resource = Image::make(__DIR__.'/../../src/image.jpeg');
+
+    $exif = new ExifData(['Make' => 'Custom']);
+
+    expect($resource->exif($exif))->toBe($resource);
+    expect($resource->exif->make)->toBe('Custom');
+});

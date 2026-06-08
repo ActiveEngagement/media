@@ -2,14 +2,17 @@
 
 namespace Actengage\Media\Support;
 
+use Actengage\Media\Media;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
-trait QueryScopes {
+trait QueryScopes
+{
     /**
      * Add a query scope for the `caption` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param string|string[] ...$values
+     * @param  Builder<Media>  $query
+     * @param  string|string[]  ...$values
      * @return void
      */
     public function scopeCaption($query, ...$values)
@@ -20,8 +23,8 @@ trait QueryScopes {
     /**
      * Add a query scope for the `context` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param string|string[] ...$values
+     * @param  Builder<Media>  $query
+     * @param  string|string[]  ...$value
      * @return void
      */
     public function scopeContext($query, ...$value)
@@ -32,8 +35,8 @@ trait QueryScopes {
     /**
      * Add a query scope for the `disk` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param string|string[] ...$values
+     * @param  Builder<Media>  $query
+     * @param  string|string[]  ...$values
      * @return void
      */
     public function scopeDisk($query, ...$values)
@@ -44,8 +47,8 @@ trait QueryScopes {
     /**
      * Add a query scope for the `extension` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param string|string[] ...$values
+     * @param  Builder<Media>  $query
+     * @param  string|string[]  ...$values
      * @return void
      */
     public function scopeExtension($query, ...$values)
@@ -56,8 +59,8 @@ trait QueryScopes {
     /**
      * Add a query scope for the `filename` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param string|string[] ...$values
+     * @param  Builder<Media>  $query
+     * @param  string|string[]  ...$values
      * @return void
      */
     public function scopeFilename($query, ...$values)
@@ -68,8 +71,8 @@ trait QueryScopes {
     /**
      * Add a query scope for the `filesize` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param int|int[] ...$values
+     * @param  Builder<Media>  $query
+     * @param  int|int[]  ...$values
      * @return void
      */
     public function scopeFilesize($query, ...$values)
@@ -80,20 +83,20 @@ trait QueryScopes {
     /**
      * Add a query scope for the `meta` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param array $meta
+     * @param  Builder<Media>  $query
+     * @param  array<array-key, mixed>  $meta
      * @return void
      */
     public function scopeMeta($query, array $meta)
     {
-        $query->whereRaw('JSON_CONTAINS(`meta`, '.json_encode($meta).')');
+        $query->whereRaw('JSON_CONTAINS(`meta`, ?)', [json_encode($meta)]);
     }
 
     /**
      * Add a query scope for the `mime` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param string|string[] ...$values
+     * @param  Builder<Media>  $query
+     * @param  string|string[]  ...$values
      * @return void
      */
     public function scopeMime($query, ...$values)
@@ -104,19 +107,17 @@ trait QueryScopes {
     /**
      * Make one or more values.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param string $key
-     * @param mixed|mixed[] ...$values
+     * @param  Builder<Media>  $query
+     * @param  mixed|mixed[]  ...$values
      * @return void
      */
     public function scopeOneOrMore($query, string $key, ...$values)
     {
         $values = (new Collection($values))->flatten();
 
-        if($values->count() == 1) {
+        if ($values->count() == 1) {
             $query->where($key, $values->first());
-        }
-        else {
+        } else {
             $query->whereIn($key, $values);
         }
     }
@@ -124,8 +125,8 @@ trait QueryScopes {
     /**
      * Add a query scope for the `tags` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param mixed ...$tags
+     * @param  Builder<Media>  $query
+     * @param  string|string[]  ...$tags
      * @return void
      */
     public function scopeTag($query, ...$tags)
@@ -136,16 +137,16 @@ trait QueryScopes {
     /**
      * Add a query scope for the `tags` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param string|string[] $tags
+     * @param  Builder<Media>  $query
+     * @param  string|string[]  ...$tags
      * @return void
      */
     public function scopeTags($query, ...$tags)
     {
         $tags = (new Collection($tags))->flatten();
 
-        $query->where(function($q) use ($tags) {
-            foreach($tags as $tag) {
+        $query->where(function ($q) use ($tags) {
+            foreach ($tags as $tag) {
                 $q->orWhereJsonContains('tags', $tag);
             }
         });
@@ -154,8 +155,8 @@ trait QueryScopes {
     /**
      * Add a query scope for the `title` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param string|string[] ...$values
+     * @param  Builder<Media>  $query
+     * @param  string|string[]  ...$values
      * @return void
      */
     public function scopeTitle($query, ...$values)
@@ -166,8 +167,8 @@ trait QueryScopes {
     /**
      * Add a query scope without the `tags` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param mixed ...$tags
+     * @param  Builder<Media>  $query
+     * @param  string|string[]  ...$tags
      * @return void
      */
     public function scopeWithoutTag($query, ...$tags)
@@ -178,16 +179,16 @@ trait QueryScopes {
     /**
      * Add a query scope without the `tags` attribute.
      *
-     * @param Illuminate\Database\Eloquent\Builder $query
-     * @param string|string[] $tags
+     * @param  Builder<Media>  $query
+     * @param  string|string[]  ...$tags
      * @return void
      */
     public function scopeWithoutTags($query, ...$tags)
     {
         $tags = (new Collection($tags))->flatten();
 
-        $query->where(function($q) use ($tags) {
-            foreach($tags as $tag) {
+        $query->where(function ($q) use ($tags) {
+            foreach ($tags as $tag) {
                 $q->orWhereJsonDoesntContain('tags', $tag);
             }
         });

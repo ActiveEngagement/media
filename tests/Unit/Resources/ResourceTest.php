@@ -1,214 +1,219 @@
 <?php
 
-namespace Tests\Unit\Resources;
-
 use Actengage\Media\Contracts\Resource as ContractsResource;
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\Resources\Image;
-use Tests\TestCase;
+use Illuminate\Support\Facades\Event;
+use Tests\Unit\Support\PlainResource;
 
-class ResourceTest extends TestCase
-{
-    public function testResourceIsImage()
-    {
-        $image = 0;
-        $file = 0;
+it('runs the matching `is` callbacks', function (): void {
+    $image = 0;
+    $file = 0;
 
-        Resource::path(__DIR__.'/../../src/image.jpeg')
-            ->is(Image::class, function($resource) use (&$image) {
-                $this->assertInstanceOf(ContractsResource::class, $resource);
-                
-                $image++;
-            })
-            ->is('file', function() use ($file) {
-                $file++;
-            })
-            ->is(['image', 'file'], function($resource) use (&$image, &$file) {
-                $image++;
-                $file++;
-            });
-        
-        $this->assertEquals(2, $image);
-        $this->assertEquals(1, $file);
-    }
+    Resource::path(__DIR__.'/../../src/image.jpeg')
+        ->is(Image::class, function ($resource) use (&$image): void {
+            expect($resource)->toBeInstanceOf(ContractsResource::class);
 
-    public function testResourceWhenTruthy()
-    {
-        $truths = 0;
+            $image++;
+        })
+        ->is('file', function () use (&$file): void {
+            $file++;
+        })
+        ->is(['image', 'file'], function ($resource) use (&$image, &$file): void {
+            $image++;
+            $file++;
+        });
 
-        Resource::path(__DIR__.'/../../src/image.jpeg')
-            ->when(true, function($resource) use (&$truths) {
-                $this->assertInstanceOf(ContractsResource::class, $resource);
+    expect($image)->toBe(2);
+    expect($file)->toBe(1);
+});
 
-                $truths++;
-            })
-            ->when(function($resource) {
-                $this->assertInstanceOf(ContractsResource::class, $resource);
+it('runs the `when` callbacks for truthy conditions', function (): void {
+    $truths = 0;
 
-                return true;
-            }, function() use (&$truths) {
-                $truths++;
-            })
-            ->when(false, function() use (&$truths) {
-                $truths++;
-            })
-            ->when(function() {
-                return false;
-            }, function() use (&$truths) {
-                $truths++;
-            });
-        
-        $this->assertEquals(2, $truths);
-    }
+    Resource::path(__DIR__.'/../../src/image.jpeg')
+        ->when(true, function ($resource) use (&$truths): void {
+            expect($resource)->toBeInstanceOf(ContractsResource::class);
 
-    public function testResourceWhenFalsy()
-    {
-        $falsy = 0;
+            $truths++;
+        })
+        ->when(function ($resource) {
+            expect($resource)->toBeInstanceOf(ContractsResource::class);
 
-        Resource::path(__DIR__.'/../../src/image.jpeg')
-            ->not(false, function($resource) use (&$falsy) {
-                $this->assertInstanceOf(ContractsResource::class, $resource);
+            return true;
+        }, function () use (&$truths): void {
+            $truths++;
+        })
+        ->when(false, function () use (&$truths): void {
+            $truths++;
+        })
+        ->when(fn () => false, function () use (&$truths): void {
+            $truths++;
+        });
 
-                $falsy++;
-            })
-            ->not(function($resource) {
-                $this->assertInstanceOf(ContractsResource::class, $resource);
+    expect($truths)->toBe(2);
+});
 
-                return false;
-            }, function() use (&$falsy) {
-                $falsy++;
-            })
-            ->not(true, function() use (&$falsy) {
-                $falsy++;
-            })
-            ->not(function() {
-                return true;
-            }, function() use (&$falsy) {
-                $falsy++;
-            });
-        
-        $this->assertEquals(2, $falsy);
-    }
+it('runs the `not` callbacks for falsy conditions', function (): void {
+    $falsy = 0;
 
-    public function testDatabaseAttributes()
-    {
-        $resource = Resource::path(__DIR__.'/../../src/file.txt')
-            ->disk($disk = 'public')
-            ->directory($directory = 'a/b/c')
-            ->context($context = 'testing')
-            ->caption($caption = 'This is a text file used for testing.')
-            ->title($title = 'This is a test!')
-            ->meta([
-                'a' => 1,
-                'b' => 2
-            ])
-            ->meta('c', 3)
-            ->tags('a', ['b'])
-            ->tags(['c', 'd']);        
+    Resource::path(__DIR__.'/../../src/image.jpeg')
+        ->not(false, function ($resource) use (&$falsy): void {
+            expect($resource)->toBeInstanceOf(ContractsResource::class);
 
-        $this->assertEquals($disk, $resource->disk);
-        $this->assertEquals($directory, $resource->directory);
-        $this->assertEquals($context, $resource->context);
-        $this->assertEquals($caption, $resource->caption);
-        $this->assertEquals($title, $resource->title);
-        $this->assertEquals(['a', 'b', 'c', 'd'], $resource->tags->all());
-        $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $resource->meta->all());
+            $falsy++;
+        })
+        ->not(function ($resource) {
+            expect($resource)->toBeInstanceOf(ContractsResource::class);
 
-        $model = $resource->save();
+            return false;
+        }, function () use (&$falsy): void {
+            $falsy++;
+        })
+        ->not(true, function () use (&$falsy): void {
+            $falsy++;
+        })
+        ->not(fn () => true, function () use (&$falsy): void {
+            $falsy++;
+        });
 
-        $this->assertEquals($disk, $model->disk);
-        $this->assertEquals($directory, $model->directory);
-        $this->assertEquals($context, $model->context);
-        $this->assertEquals($caption, $model->caption);
-        $this->assertEquals($title, $model->title);
-        $this->assertEquals(['a', 'b', 'c', 'd'], $model->tags->all());
-        $this->assertEquals(['a' => 1, 'b' => 2, 'c' => 3], $model->meta->all());
-    }
+    expect($falsy)->toBe(2);
+});
 
-    public function testChangeFilename()
-    {
-        $model = Resource::path(__DIR__.'/../../src/file.txt')
-            ->filename('renamed.html')
-            ->mime('plain/html')
-            ->save();
-        
-        $this->assertEquals('plain/html', $model->mime);
-        $this->assertEquals('html', $model->extension);
-        $this->assertEquals('renamed.html', $model->filename);
-    }
-    
-    public function testChangeExtension()
-    {
-        $model = Resource::path(__DIR__.'/../../src/file.txt')
-            ->extension('html')
-            ->mime('plain/html')
-            ->save();
-        
-        $this->assertEquals('plain/html', $model->mime);
-        $this->assertEquals('html', $model->extension);
-        $this->assertEquals('file.html', $model->filename);
-    }
+it('sets and persists database attributes', function (): void {
+    $resource = Resource::path(__DIR__.'/../../src/file.txt')
+        ->disk($disk = 'public')
+        ->directory($directory = 'a/b/c')
+        ->context($context = 'testing')
+        ->caption($caption = 'This is a text file used for testing.')
+        ->title($title = 'This is a test!')
+        ->meta([
+            'a' => 1,
+            'b' => 2,
+        ])
+        ->meta('c', 3)
+        ->tags('a', ['b'])
+        ->tags(['c', 'd']);
 
-    public function testChangeFilenameWithoutChanginTheExtension()
-    {
-        $model = Resource::path(__DIR__.'/../../src/file.txt')
-            ->filename('renamed')
-            ->save();
-        
-        $this->assertEquals('txt', $model->extension);
-        $this->assertEquals('renamed.txt', $model->filename);
-    }
+    expect($resource->disk)->toBe($disk);
+    expect($resource->directory)->toBe($directory);
+    expect($resource->context)->toBe($context);
+    expect($resource->caption)->toBe($caption);
+    expect($resource->title)->toBe($title);
+    expect($resource->tags?->all())->toBe(['a', 'b', 'c', 'd']);
+    expect($resource->meta?->all())->toBe(['a' => 1, 'b' => 2, 'c' => 3]);
 
-    public function testChangeExtensionWithoutChangingTheFilename()
-    {
-        $model = Resource::path(__DIR__.'/../../src/file.txt')
-            ->extension('html')
-            ->save();
-        
-        $this->assertEquals('html', $model->extension);
-        $this->assertEquals('file.html', $model->filename);
-    }
+    $model = $resource->save();
 
-    public function testParentAttribute()
-    {
-        $parent = Resource::path(__DIR__.'/../../src/file.txt')
-            ->filename('parent.txt')
-            ->save();
-        
-        $child = Resource::path(__DIR__.'/../../src/file.txt')
-            ->filename('child.txt')
-            ->parent($parent)
-            ->save();        
-        
-        $this->assertNull($parent->parent);
-        $this->assertEquals($child->parent, $parent);
-        $this->assertCount(1, $parent->children);
-    }
+    expect($model->disk)->toBe($disk);
+    expect($model->directory)->toBe($directory);
+    expect($model->context)->toBe($context);
+    expect($model->caption)->toBe($caption);
+    expect($model->title)->toBe($title);
+    expect($model->tags->all())->toBe(['a', 'b', 'c', 'd']);
+    expect($model->meta->all())->toBe(['a' => 1, 'b' => 2, 'c' => 3]);
+});
 
-    public function testFormattedFilesizeAttribute()
-    {
-        $model = Resource::path(__DIR__.'/../../src/index.html')->save();
-        
-        $this->assertEquals('286 B', $model->size);
-    }
+it('changes the filename', function (): void {
+    $model = Resource::path(__DIR__.'/../../src/file.txt')
+        ->filename('renamed.html')
+        ->mime('plain/html')
+        ->save();
 
-    public function testInitializingWithoutData()
-    {
-        $resource = new Image();
-        $resource->initialize(__DIR__.'/../../src/image.jpeg');
-        
-        $this->assertTrue($resource->save()->exists);
-    }
+    expect($model->mime)->toBe('plain/html');
+    expect($model->extension)->toBe('html');
+    expect($model->filename)->toBe('renamed.html');
+});
 
-    public function testTagsCorrectlySetsTaggingStorageOption()
-    {
-        $resource = Resource::path(__DIR__.'/../../src/file.txt')
-            ->tags(['a', 'b', 'c']);
-        
-        $this->assertEquals(
-            'a=true&b=true&c=true',
-            $resource->storageOptions->get('Tagging')
-        );
-    }
+it('changes the extension', function (): void {
+    $model = Resource::path(__DIR__.'/../../src/file.txt')
+        ->extension('html')
+        ->mime('plain/html')
+        ->save();
 
-}
+    expect($model->mime)->toBe('plain/html');
+    expect($model->extension)->toBe('html');
+    expect($model->filename)->toBe('file.html');
+});
+
+it('changes the filename without changing the extension', function (): void {
+    $model = Resource::path(__DIR__.'/../../src/file.txt')
+        ->filename('renamed')
+        ->save();
+
+    expect($model->extension)->toBe('txt');
+    expect($model->filename)->toBe('renamed.txt');
+});
+
+it('changes the extension without changing the filename', function (): void {
+    $model = Resource::path(__DIR__.'/../../src/file.txt')
+        ->extension('html')
+        ->save();
+
+    expect($model->extension)->toBe('html');
+    expect($model->filename)->toBe('file.html');
+});
+
+it('associates a parent model', function (): void {
+    $parent = Resource::path(__DIR__.'/../../src/file.txt')
+        ->filename('parent.txt')
+        ->save();
+
+    $child = Resource::path(__DIR__.'/../../src/file.txt')
+        ->filename('child.txt')
+        ->parent($parent)
+        ->save();
+
+    expect($parent->parent)->toBeNull();
+    expect($child->parent?->is($parent))->toBeTrue();
+    expect($parent->children)->toHaveCount(1);
+});
+
+it('formats the filesize attribute', function (): void {
+    $model = Resource::path(__DIR__.'/../../src/index.html')->save();
+
+    expect($model->size)->toBe('286 B');
+});
+
+it('initializes a resource without constructor data', function (): void {
+    $resource = new Image;
+    $resource->initialize(__DIR__.'/../../src/image.jpeg');
+
+    expect($resource->save()->exists)->toBeTrue();
+});
+
+it('sets the tagging storage option from tags', function (): void {
+    $resource = Resource::path(__DIR__.'/../../src/file.txt')
+        ->tags(['a', 'b', 'c']);
+
+    expect($resource->storageOptions?->get('Tagging'))->toBe('a=true&b=true&c=true');
+});
+
+it('registers an observable event via an instance call', function (): void {
+    Event::fake();
+
+    $resource = Image::make(__DIR__.'/../../src/image.jpeg');
+
+    expect($resource->saving(function (): void {
+        //
+    }))->toBe($resource);
+});
+
+it('registers an observable event via a static call', function (): void {
+    expect(Image::saved(function (): void {
+        //
+    }))->toBeNull();
+});
+
+it('calls a registered static macro', function (): void {
+    Image::macro('staticGreeting', fn (): string => 'hello');
+
+    expect(Image::staticGreeting())->toBe('hello');
+});
+
+it('runs the abstract resource initialize for resources without an override', function (): void {
+    $resource = new PlainResource('some data');
+
+    expect($resource)->toBeInstanceOf(PlainResource::class);
+    expect($resource->disk)->not->toBeNull();
+});

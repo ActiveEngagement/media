@@ -2,11 +2,18 @@
 
 namespace Actengage\Media;
 
-use Actengage\Media\Media;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
-trait Mediable {
-
+/**
+ * @property-read Collection<int, Media> $media
+ * @property-read Media|null $medium
+ *
+ * @mixin Model
+ */
+trait Mediable
+{
     /**
      * Boot the trait.
      *
@@ -14,7 +21,7 @@ trait Mediable {
      */
     protected static function bootMediable()
     {
-        static::deleting(function ($model) {
+        static::deleting(function (self $model) {
             $model->media()->detach();
         });
     }
@@ -22,7 +29,7 @@ trait Mediable {
     /**
      * Get all of the associated media models.
      *
-     * @return Illuminate\Database\Eloquent\Relations\MorphToMany
+     * @return MorphToMany<Media, $this>
      */
     public function media(): MorphToMany
     {
@@ -33,10 +40,8 @@ trait Mediable {
 
     /**
      * Get the first associated media model.
-     *
-     * @return Actengage\Media\MorphOneThrough
      */
-    public function medium()
+    public function medium(): MorphOneThrough
     {
         return $this->morphOneThrough(
             'mediable', 'mediables', 'mediable_id', 'model_id', 'id', 'id'
@@ -47,24 +52,22 @@ trait Mediable {
      * Custom/hack helper function. This allows eager loading of relationships,
      * but instead of returning a collection, it returns the first result found.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  \Illuminate\Database\Eloquent\Model  $parent
+     * @param  string  $name
      * @param  string  $table
      * @param  string  $foreignPivotKey
      * @param  string  $relatedPivotKey
      * @param  string  $parentKey
      * @param  string  $relatedKey
-     * @param  string  $relationName
-     * @return void
+     * @param  string|null  $relationName
+     * @param  bool  $inverse
      */
     public function morphOneThrough($name, $table, $foreignPivotKey,
-                                    $relatedPivotKey, $parentKey, $relatedKey,
-                                    $relationName = null, $inverse = false)
+        $relatedPivotKey, $parentKey, $relatedKey,
+        $relationName = null, $inverse = false): MorphOneThrough
     {
         return new MorphOneThrough(
             Media::query(), $this, $name, $table, $foreignPivotKey,
             $relatedPivotKey, $parentKey, $relatedKey, $relationName, $inverse
         );
     }
-
 }

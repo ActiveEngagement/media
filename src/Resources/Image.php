@@ -3,47 +3,52 @@
 namespace Actengage\Media\Resources;
 
 use Actengage\Media\Data\Stream;
-use Actengage\Media\Exceptions\InvalidResourceException;
 use Actengage\Media\Exceptions\BadAttributeException;
+use Actengage\Media\Exceptions\InvalidResourceException;
 use Actengage\Media\Media;
 use Actengage\Media\Support\ExifData;
+use ColorThief\Color;
 use ColorThief\ColorThief;
+use ColorThief\Image\Adapter\AdapterInterface;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Exception\NotReadableException;
 use Intervention\Image\ImageManagerStatic;
 use Psr\Http\Message\StreamInterface;
 
+/**
+ * @method \Illuminate\Support\Collection<int, \ColorThief\Color> palette(int $colorCount = 10, int $quality = 10, array{0?: int, 1?: int, 2?: int, 3?: int}|null $area = null, string $outputFormat = 'obj', \ColorThief\Image\Adapter\AdapterInterface|string|null $adapter = null)
+ * @method $this resize(int|null $width, int|null $height, ?callable $callback = null)
+ * @method $this greyscale()
+ * @method $this saving(\Closure|string $callback)
+ * @method static null saved(\Closure|string $callback)
+ * @method static string staticGreeting()
+ */
 class Image extends Resource
 {
     /**
      * The exif data instance.
-     *
-     * @var ExifData
      */
     public ExifData $exif;
 
     /**
      * The image resource.
-     *
-     * @var \Intervention\Image\Image
      */
     protected \Intervention\Image\Image $image;
 
     /**
      * Call methods on the image resource and return the value.
      *
-     * @param string $name
-     * @param array $arguments
+     * @param  string  $name
+     * @param  array<array-key, mixed>  $arguments
      * @return mixed
      */
     public function __call($name, $arguments)
     {
         try {
             return parent::__call($name, $arguments);
-        }
-        catch(BadAttributeException $e) {
-            call_user_func_array([$this->image, $name], $arguments);
+        } catch (BadAttributeException) {
+            $this->image->{$name}(...array_values($arguments));
 
             $this->filesize($this->image->stream(
                 $this->extension
@@ -56,7 +61,6 @@ class Image extends Resource
     /**
      * Initialize the resource.
      *
-     * @param mixed $data
      * @return void
      */
     public function initialize(mixed $data)
@@ -68,8 +72,7 @@ class Image extends Resource
             $this->filesize = $this->image->filesize();
             $this->mime = $this->image->mime();
             $this->exif = new ExifData($this->image);
-        } 
-        catch(NotReadableException $e) {
+        } catch (NotReadableException $e) {
             throw new InvalidResourceException(
                 $e->getMessage(), $e->getCode(), $e
             );
@@ -79,19 +82,18 @@ class Image extends Resource
     /**
      * Get the model attributes.
      *
-     * @return array
+     * @param  array<string, mixed>  ...$overrides
+     * @return array<string, mixed>
      */
-    public function attributes(): array
+    public function attributes(array ...$overrides): array
     {
         return parent::attributes([
-            'exif' => $this->exif
-        ]);
+            'exif' => $this->exif,
+        ], ...$overrides);
     }
 
     /**
      * Returns core image resource/obj.
-     *
-     * @return mixed
      */
     public function core(): mixed
     {
@@ -101,11 +103,9 @@ class Image extends Resource
     /**
      * Get the dominant color of the image.
      *
-     * @param integer $quality
-     * @param array|null $area
-     * @param string $outputFormat
-     * @param \ColorThief\Image\Adapter\AdapterInterface|string|null $adapter 
-     * @return \ColorThief\Color|int|string|null
+     * @param  array{0?: int, 1?: int, 2?: int, 3?: int}|null  $area
+     * @param  AdapterInterface|string|null  $adapter
+     * @return mixed
      */
     public function color(
         int $quality = 10,
@@ -121,12 +121,9 @@ class Image extends Resource
             $adapter
         );
     }
-    
+
     /**
      * Set the exif data.
-     *
-     * @param ExifData $exif
-     * @return self
      */
     public function exif(ExifData $exif): self
     {
@@ -137,18 +134,14 @@ class Image extends Resource
 
     /**
      * Get the image instance.
-     *
-     * @return \Intervention\Image\Image
      */
     public function image(): \Intervention\Image\Image
     {
         return $this->image;
     }
-    
+
     /**
      * Get the resource data as a stream.
-     *
-     * @return StreamInterface
      */
     public function stream(): StreamInterface
     {
@@ -157,9 +150,6 @@ class Image extends Resource
 
     /**
      * Store the resource on the disk.
-     *
-     * @param Media $model
-     * @return boolean
      */
     public function store(Media $model): bool
     {
@@ -174,17 +164,14 @@ class Image extends Resource
 
     /**
      * Extract the extension from the data.
-     *
-     * @param mixed $data
-     * @return string|null
      */
     protected function extractExtension(mixed $data): ?string
     {
-        if($data instanceof UploadedFile) {
+        if ($data instanceof UploadedFile) {
             return $data->getClientOriginalExtension();
         }
 
-        if($data instanceof Stream) {
+        if ($data instanceof Stream) {
             return $data->extension();
         }
 
@@ -193,17 +180,14 @@ class Image extends Resource
 
     /**
      * Extract the filename from the data.
-     *
-     * @param mixed $data
-     * @return string|null
      */
     protected function extractFilename(mixed $data): ?string
     {
-        if($data instanceof UploadedFile) {
+        if ($data instanceof UploadedFile) {
             return $data->getClientOriginalName();
         }
 
-        if($data instanceof Stream) {
+        if ($data instanceof Stream) {
             return $data->filename();
         }
 

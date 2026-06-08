@@ -8,35 +8,37 @@ This package provides a unit tested API to manage different types of files which
 - `Mediable` trait to relate any eloquent model to the `Media` model.
 - `Resource` API to add support for additional types of media.
 - `Plugin` API which adds optional features, like color extraction for images.
-- Uses [File Storage](https://laravel.com/docs/9.x/filesystem) to manage files.
+- Uses [File Storage](https://laravel.com/docs/filesystem) to manage files.
 - Uses [Intervention Image](https://image.intervention.io/) to manage and manipulate images.
-- Unit tested
-  
+- Fully tested with [Pest](https://pestphp.com/) at 100% code coverage.
+
 ## Requirements
 
-- Laravel 9.x+
-- PHP 8.x+
-- Intervention Image 2.x+
-- GD or Imagick
+- PHP 8.3, 8.4, or 8.5
+- Laravel 11, 12, or 13
+- Intervention Image 2.x
+- GD or Imagick PHP extension (plus `exif` and `fileinfo` for image metadata)
 
 ## Getting Started
 
 *Install via Composer*
- 
-```
+
+```bash
 composer require actengage/media
 ```
 
-*Publish the config file*
+The service provider, `Media` facade, and `Resource` facade are auto-discovered, and the package's migrations are loaded automatically — no extra setup is required to start storing media.
 
-```
-php artisan vendor:publish --tag=config
+*Optionally publish the config file*
+
+```bash
+php artisan vendor:publish --tag=media-config
 ```
 
-*Optional, publish the migration files*
+*Optionally publish the migrations* (only needed if you want to customize the schema; they are loaded automatically otherwise)
 
-```
-php artisan vendor:publish --tag=config
+```bash
+php artisan vendor:publish --tag=media-migrations
 ```
 
 ## Resource Factory
@@ -132,6 +134,7 @@ $resource = Resource::request('image')
     }, function($resource) {
         // This will only be called when `false` is returned from the first callback.
     });
+```
 
 ## Resource Context, Meta, Tags
 
@@ -167,32 +170,35 @@ $resource->tags('d', 'e', 'f');
 
 Similar to Eloquent events, `Resource` event handlers work the same way. There are two ways to bind events, globally to a `Resource` class, or on the instance of a resource. The difference is global event binding is handled for all resources, whereas the instance methods are only fired for that instance.
 
+The observable events fired during a resource's lifecycle are, in order: `initialized`, `saving`, `saved`, `storing`, and `stored`.
+
 ### Global Methods
 
 ```php
-use Actengage\Resources\Image;
+use Actengage\Media\Resources\Image;
 
-Image::creating(function($resource, $model) {
-    // This method is fired for the every Image resource before it
-    // has been saved, similar to the `creating` Eloquent event.
+Image::saving(function($resource, $model) {
+    // This method is fired for every Image resource before it has been
+    // persisted, similar to the `saving` Eloquent event.
 });
 
-Image::created(function($resource, $model) {
-    // This method is fired for the every Image resource after it
-    // has been saved, similar to the `creating` Eloquent event.
+Image::stored(function($resource, $model) {
+    // This method is fired for every Image resource after its file has
+    // been written to disk.
 });
 ```
 
 ### Instance Methods
+
 ```php
 $resource = Resource::request('image')
-    ->creating(function($resource, $model) {
+    ->saving(function($resource, $model) {
         // This method is fired for the resource instance before it
-        // has been saved, similar to the `creating` Eloquent event.
+        // has been persisted.
     })
-    ->created(function($resource, $model) {
-        // This method is fired for the resource instance after it
-        // has been saved, similar to the `created` Eloquent event.
+    ->stored(function($resource, $model) {
+        // This method is fired for the resource instance after its
+        // file has been written to disk.
     });
 ```
 
@@ -320,9 +326,11 @@ A `Plugin` class can be used in one of two ways. The first way is to bind it sta
 
 ```php
 use Actengage\Media\Resources\Image;
+use Actengage\Media\Plugins\ExtractImageColors;
+use Actengage\Media\Plugins\HashFilename;
 
 // These plugins will only fire on Image resources.
-Image::plugins([
+Image::register([
     // This is a plugin without any options defined.
     HashFilename::class,
 
@@ -384,39 +392,47 @@ return [
 
 namespace Actengage\Media\Plugins;
 
+use Actengage\Media\Contracts\Resource;
 use Actengage\Media\Media;
 use Actengage\Media\Resources\Image;
 use ColorThief\ColorThief;
 use Illuminate\Support\Collection;
 
-class ExtractImageColors extends Plugin {
+class ExtractImageColors extends Plugin
+{
+    /**
+     * The resources that are compatible with the plugin.
+     */
+    protected static array $compatibleResources = [
+        Image::class,
+    ];
 
     /**
-     * Boot the plugin.
-     *
-     * @param Collection $options
-     * @return void
+     * Runs after the `saving` event fires.
+     */
+    public function saving(Resource $resource, Media $model): void
+    {
+        if ($resource instanceof Image) {
+            $model->colors = $resource->palette(
+                (int) $this->options->get('colorCount', 10),
+                (int) $this->options->get('quality', 10)
+            );
+        }
+    }
+
+    /**
+     * Boot the plugin and register the `palette` macro on the Image resource.
      */
     public static function boot(Collection $options): void
     {
-        /**
-         * Get the color palette of the image.
-         *
-         * @param integer $colorCount
-         * @param integer $quality
-         * @param array|null $area
-         * @param string $outputFormat
-         * @param \ColorThief\Image\Adapter\AdapterInterface|string|null $adapter 
-         * @return \Illuminate\Support\Collection
-         */
-        Image::macro('palette', function(
+        Image::macro('palette', function (
             int $colorCount = 10,
             int $quality = 10,
             ?array $area = null,
             string $outputFormat = 'obj',
             $adapter = null
         ): Collection {
-            return collect(ColorThief::getPalette(
+            return new Collection(ColorThief::getPalette(
                 $this->image->getCore(),
                 $colorCount,
                 $quality,
@@ -425,13 +441,37 @@ class ExtractImageColors extends Plugin {
                 $adapter
             ));
         });
-    
-        Image::creating(function(Image $resource, Media $model) use ($options) {
-            $model->colors = $resource->palette(
-                (int) $options->get('colorCount', 10),
-                (int) $options->get('quality', 10)
-            );
-        });
     }
 }
 ```
+
+## Development
+
+This package uses [Pest](https://pestphp.com/) for testing, [Larastan](https://github.com/larastan/larastan)/[PHPStan](https://phpstan.org/) for static analysis, [Rector](https://getrector.com/) for automated refactoring, and [Pint](https://laravel.com/docs/pint) for code style. Continuous integration runs all four against a PHP 8.3, 8.4, and 8.5 matrix.
+
+```bash
+# Run the test suite with 100% coverage enforcement
+composer test
+vendor/bin/pest --coverage --min=100
+
+# Static analysis (max level)
+vendor/bin/phpstan analyse
+
+# Check (and apply) automated refactors
+vendor/bin/rector --dry-run
+vendor/bin/rector
+
+# Check (and fix) code style
+vendor/bin/pint --test
+vendor/bin/pint
+```
+
+### Releases
+
+Versioning is managed with [changesets](https://github.com/changesets/changesets). When you make a change that should be released, add a changeset describing it:
+
+```bash
+pnpm changeset
+```
+
+Merging the resulting "Version Packages" pull request tags the release automatically.

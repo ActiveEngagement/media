@@ -4,36 +4,32 @@ namespace Actengage\Media;
 
 use Actengage\Media\Contracts\Resource;
 use Actengage\Media\Exceptions\InvalidResourceException;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Config;
 
 class ResourceFactory
 {
     /**
      * An array of resource classes.
      *
-     * @var array
+     * @var array<string, class-string<resource>>
      */
     protected array $resources = [];
 
     /**
      * Creates new instance of Resource Manager.
-     *
-     * @param array $config
      */
-    public function __construct(Application $app)
+    public function __construct()
     {
-        $this->configure($app->config['media.resources']);
+        $this->configure(Config::array('media.resources', []));
     }
 
     /**
      * Run the `boot()` methods on the applicable resources.
-     *
-     * @return void
      */
     public function boot(): void
     {
-        foreach($this->resources as $resource) {
+        foreach ($this->resources as $resource) {
             $resource::boot();
         }
     }
@@ -41,12 +37,15 @@ class ResourceFactory
     /**
      * Configure the resources.
      *
-     * @param array $resources
-     * @return self
+     * @param  array<array-key, mixed>  $resources
      */
     public function configure(array $resources = []): self
     {
-        $this->resources = array_replace($this->resources, $resources);
+        foreach ($resources as $key => $resource) {
+            if (is_string($resource) && is_a($resource, Resource::class, true)) {
+                $this->resources[(string) $key] = $resource;
+            }
+        }
 
         return $this;
     }
@@ -54,14 +53,12 @@ class ResourceFactory
     /**
      * Check if a resource instance is one of the given keys.
      *
-     * @param Resource $resource
-     * @param array|string $keys
-     * @return boolean
+     * @param  array<array-key, string>|string  $keys
      */
     public function is(Resource $resource, array|string $keys): bool
     {
-        foreach(Arr::wrap($keys) as $key) {
-            if(get_class($resource) === Arr::get($this->resources, $key, get_class($resource))) {
+        foreach (Arr::wrap($keys) as $key) {
+            if ($resource::class === Arr::get($this->resources, $key, $resource::class)) {
                 return true;
             }
         }
@@ -72,16 +69,16 @@ class ResourceFactory
     /**
      * Instantiates a resource instance.
      *
-     * @param mixed $data
+     * @param  mixed  $data
+     *
      * @throws InvalidResourceException
-     * @return \Actengage\Media\Contracts\Resource
      */
     public function make($data): Resource
     {
         foreach ($this->resources as $resource) {
             try {
                 return $resource::make($data);
-            } catch (InvalidResourceException $e) {
+            } catch (InvalidResourceException) {
                 continue;
             }
         }
@@ -94,9 +91,7 @@ class ResourceFactory
     /**
      * Instantiates a resource instance using a file path.
      *
-     * @param string $path
-     * @param string $filename
-     * @return \Actengage\Media\Contracts\Resource
+     * @return Contracts\Resource
      */
     public function path(string $path)
     {
@@ -106,8 +101,7 @@ class ResourceFactory
     /**
      * Instantiates a resource instance using a request file.
      *
-     * @param string $key
-     * @return \Actengage\Media\Contracts\Resource
+     * @return Contracts\Resource
      */
     public function request(string $key)
     {
@@ -116,23 +110,22 @@ class ResourceFactory
 
     /**
      * Get the resource by key.
-     *
-     * @param string $key
-     * @return string
      */
     public function resource(string $key): string
     {
-        if(is_a($key, Resource::class, true)) {
+        if (is_a($key, Resource::class, true)) {
             return $key;
         }
 
-        return Arr::get($this->resources(), $key, $key);
+        $resource = Arr::get($this->resources(), $key, $key);
+
+        return is_string($resource) ? $resource : $key;
     }
 
     /**
      * Get the registered resources.
      *
-     * @return array
+     * @return array<string, class-string<resource>>
      */
     public function resources(): array
     {

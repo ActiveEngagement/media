@@ -2,13 +2,18 @@
 
 namespace Tests\Unit\Support;
 
-use League\Flysystem\Local\LocalFilesystemAdapter;
-
 class DummyFilesystem
 {
+    /**
+     * @var array<array-key, mixed>|null
+     */
     public ?array $options;
 
-    public function writeStream($path, $resource, array $options = [])
+    /**
+     * @param  resource  $resource
+     * @param  array<array-key, mixed>  $options
+     */
+    public function writeStream(string $path, $resource, array $options = []): bool
     {
         $this->options = $options;
 

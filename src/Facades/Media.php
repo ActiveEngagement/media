@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Actengage\Media\Facades;
 
 use Actengage\Media\Media as Model;

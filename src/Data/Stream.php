@@ -7,6 +7,9 @@ use GuzzleHttp\Psr7\Stream as BaseStream;
 use Psr\Http\Message\StreamInterface;
 use SplFileInfo;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class Stream extends BaseStream
 {
     /**
@@ -17,8 +20,8 @@ class Stream extends BaseStream
     /**
      * Create an instance of a file stream.
      *
-     * @param resource $subject
-     * @param array $options
+     * @param  resource  $subject
+     * @param  array{size?: int, metadata?: array<string, mixed>}  $options
      */
     public function __construct($subject, array $options = [])
     {
@@ -27,8 +30,6 @@ class Stream extends BaseStream
 
     /**
      * Get the extension of the resource.
-     *
-     * @return string
      */
     public function extension(): string
     {
@@ -37,22 +38,28 @@ class Stream extends BaseStream
 
     /**
      * Get the name of the resource.
-     *
-     * @return string
      */
     public function filename(): string
     {
-        return $this->getMetadata('filename') ?? basename($this->getMetadata('uri'));
+        $filename = $this->getMetadata('filename');
+
+        if (is_string($filename)) {
+            return $filename;
+        }
+
+        $uri = $this->getMetadata('uri');
+
+        return basename(is_string($uri) ? $uri : '');
     }
 
     /**
      * Get the mime type of the resource.
-     *
-     * @return string
      */
     public function mime(): string
     {
-        return mime_content_type($this->stream);
+        $mime = mime_content_type($this->stream);
+
+        return $mime === false ? '' : $mime;
     }
 
     /**
@@ -68,112 +75,125 @@ class Stream extends BaseStream
     /**
      * Instantiate an instance of the stream.
      *
-     * @param mixed $subject
-     * @param array $options
+     * @param  mixed  $subject
+     * @param  array{size?: int, metadata?: array<string, mixed>}  $options
+     *
      * @throws NotReadableException
-     * @return static
      */
     public static function make($subject, array $options = []): static
     {
-        if($subject instanceof StreamInterface) {
+        if ($subject instanceof StreamInterface) {
             return static::createFromStreamInterface($subject, $options);
         }
 
-        if(is_resource($subject)) {
+        if (is_resource($subject)) {
             return static::createFromResource($subject, $options);
         }
-        
-        if($subject instanceof SplFileInfo) {
+
+        if ($subject instanceof SplFileInfo) {
             return static::createFromSplFileInfo($subject, array_merge($options, [
                 'metadata' => [
-                    'filename' => $subject->getBasename()
-                ]
+                    'filename' => $subject->getBasename(),
+                ],
             ]));
         }
-        
-        if(is_string($subject) && file_exists($subject)) {
+
+        if (is_string($subject) && file_exists($subject)) {
             return static::createFromPath($subject, $options);
         }
-        
-        if(is_string($subject)) {
+
+        if (is_string($subject)) {
             return static::createFromString($subject, $options);
         }
-        
+
         throw new NotReadableException('Cannot create stream using invalid data.');
     }
 
     /**
      * Create a stream from a resource.
      *
-     * @param mixed $subject
-     * @param array $options
-     * @return static
+     * @param  resource  $subject
+     * @param  array{size?: int, metadata?: array<string, mixed>}  $options
      */
     protected static function createFromResource($subject, array $options = []): static
     {
         return new static($subject, $options);
     }
+
     /**
      * Create a stream from a file path.
      *
-     * @param mixed $subject
-     * @param array $options
-     * @return static
+     * @param  array{size?: int, metadata?: array<string, mixed>}  $options
+     *
+     * @throws NotReadableException
      */
     protected static function createFromPath(string $data, array $options = []): static
     {
-        return new static(fopen($data, 'r+'), $options);
+        return new static(static::open($data, 'r+'), $options);
     }
 
     /**
      * Create a stream from a SplFileInfo object.
      *
-     * @param mixed $subject
-     * @param array $options
-     * @return static
+     * @param  array{size?: int, metadata?: array<string, mixed>}  $options
+     *
+     * @throws NotReadableException
      */
     protected static function createFromSplFileInfo(SplFileInfo $data, array $options = []): static
     {
-        return new static(fopen($data->getPathname(), 'r+'), $options);
+        return new static(static::open($data->getPathname(), 'r+'), $options);
     }
 
     /**
      * Create from PSR stream interface.
      *
-     * @param StreamInterface $stream
-     * @return static
+     * @param  array{size?: int, metadata?: array<string, mixed>}  $options
+     *
+     * @throws NotReadableException
      */
     protected static function createFromStreamInterface(StreamInterface $stream, array $options = []): static
     {
-        $resource = fopen('php://memory','r+');
+        $resource = static::open('php://memory', 'r+');
 
         $stream->rewind();
 
-        while(!$stream->eof()) {
+        while (! $stream->eof()) {
             fwrite($resource, $stream->read(1000000));
         }
 
         $stream->rewind();
 
         rewind($resource);
-        
-        return new Stream($resource, $options);
+
+        return new static($resource, $options);
     }
 
     /**
      * Create a stream from a string.
      *
-     * @param mixed $subject
-     * @param array $options
-     * @return static
+     * @param  array{size?: int, metadata?: array<string, mixed>}  $options
+     *
+     * @throws NotReadableException
      */
     protected static function createFromString(string $data, array $options = []): static
     {
-        $resource = fopen('php://memory','r+');
+        $resource = static::open('php://memory', 'r+');
 
         fwrite($resource, $data);
         rewind($resource);
 
         return new static($resource, $options);
+    }
+
+    /**
+     * Open a file handle, ensuring a valid resource is returned.
+     *
+     * @return resource
+     *
+     * @throws NotReadableException
+     */
+    protected static function open(string $path, string $mode)
+    {
+        return fopen($path, $mode) ?: throw new NotReadableException("Unable to open stream for [{$path}].");
     }
 }

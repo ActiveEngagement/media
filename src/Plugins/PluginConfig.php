@@ -6,43 +6,49 @@ use Actengage\Media\Contracts\Plugin;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
+/**
+ * @phpstan-consistent-constructor
+ */
 class PluginConfig
 {
     /**
      * The plugin class name.
      *
-     * @var string
+     * @var class-string<Plugin>
      */
     protected string $class;
-    
+
     /**
      * The options collection/
      *
-     * @var Collection
+     * @var Collection<array-key, mixed>
      */
     protected Collection $options;
 
     /**
      * Determines if the config has been booted.
-     *
-     * @var boolean
      */
     protected bool $booted = false;
 
     /**
      * Create an instance of the config.
      *
-     * @param array|string $plugin
+     * @param  array<array-key, mixed>|string  $plugin
      */
     public function __construct(array|string $plugin)
     {
-        if(is_string($plugin)) {
+        if (is_string($plugin)) {
             $plugin = [$plugin];
         }
-        
-        $this->class = Arr::get($plugin, 0);
+
+        $class = Arr::get($plugin, 0);
+
+        $this->class = is_string($class) && is_a($class, Plugin::class, true) ? $class : throw new \InvalidArgumentException('A plugin config must reference a valid plugin class.');
+
+        $options = Arr::get($plugin, 1, []);
+
         $this->options = new Collection(
-            Arr::get($plugin, 1, [])
+            is_array($options) ? $options : [$options]
         );
     }
 
@@ -59,8 +65,6 @@ class PluginConfig
 
     /**
      * Get the booted property.
-     *
-     * @return boolean
      */
     public function booted(): bool
     {
@@ -70,7 +74,7 @@ class PluginConfig
     /**
      * Get the class property.
      *
-     * @return string
+     * @return class-string<Plugin>
      */
     public function class(): string
     {
@@ -80,7 +84,7 @@ class PluginConfig
     /**
      * Get the options property.
      *
-     * @return Collection
+     * @return Collection<array-key, mixed>
      */
     public function options(): Collection
     {
@@ -89,8 +93,6 @@ class PluginConfig
 
     /**
      * Create an new instance of the plugin using the defined configuration.
-     *
-     * @return Plugin
      */
     public function plugin(): Plugin
     {
@@ -99,25 +101,21 @@ class PluginConfig
 
     /**
      * Determines if this instance matches another instance.
-     *
-     * @param PluginConfig $plugin
-     * @return boolean
      */
     public function matches(PluginConfig $plugin): bool
     {
         return $this->class === $plugin->class()
-            && !$plugin->options()->diff($this->options)->count();
+            && ! $plugin->options()->diff($this->options)->count();
     }
 
     /**
      * Create an instance of the PluginConfig.
      *
-     * @param PluginConfig|array|string $config
-     * @return PluginConfig
+     * @param  PluginConfig|array<array-key, mixed>|string  $config
      */
     public static function make(PluginConfig|array|string $config): PluginConfig
     {
-        if($config instanceof PluginConfig) {
+        if ($config instanceof PluginConfig) {
             return $config;
         }
 

@@ -4,20 +4,20 @@ namespace Actengage\Media\Plugins;
 
 use Actengage\Media\Contracts\Resource;
 use Actengage\Media\Media;
+use Actengage\Media\Resources\Resource as ConcreteResource;
 
 /**
  * Stores the images in a directory that matches the model's primary key.
- * 
+ *
  * Available Options:
- * 
- * @var string extractor An invokeable class used to extract the model attribute.
+ *
+ * - `extractor`: An invokeable class used to extract the model attribute.
  */
 class ModelDirectory extends Plugin
 {
     /**
      * Fires after the resource has been initialized.
      *
-     * @param Resource $resource
      * @return void
      */
     public function saved(Resource $resource, Media $model)
@@ -28,32 +28,39 @@ class ModelDirectory extends Plugin
     /**
      * Runs after the `stored` event fires.
      *
-     * @param Resource $resource
-     * @param Media $model
      * @return void
      */
     public function storing(Resource $resource, Media $model)
     {
-        $model->directory = $resource->directory;
-        $model->save();
+        if ($resource instanceof ConcreteResource) {
+            $model->directory = $resource->directory;
+            $model->save();
+        }
     }
 
     /**
      * Extract the model attribute.
-     *
-     * @param Media $model
-     * @return mixed
      */
-    protected function extract(Media $model)
+    protected function extract(Media $model): string
     {
-        if(!$extractor = $this->options->get('extractor')) {
-            return $model->getKey();
-        }
-        
-        if(is_string($extractor)) {
+        $extractor = $this->options->get('extractor');
+
+        if (is_string($extractor)) {
             $extractor = new $extractor;
         }
 
-        return $extractor($model);
+        if (is_callable($extractor)) {
+            return $this->stringify($extractor($model));
+        }
+
+        return $this->stringify($model->getKey());
+    }
+
+    /**
+     * Coerce a scalar value into a string.
+     */
+    protected function stringify(mixed $value): string
+    {
+        return is_scalar($value) ? (string) $value : '';
     }
 }

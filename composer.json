@@ -23,6 +23,9 @@
         "orchestra/testbench": "^9.0|^10.0|^11.0",
         "pestphp/pest": "^3.0|^4.0",
         "pestphp/pest-plugin-laravel": "^3.0|^4.0",
+        "larastan/larastan": "^3.0",
+        "rector/rector": "^2.0",
+        "laravel/pint": "^1.18",
         "laravel/boost": "^2.0"
     },
     "autoload": {
@@ -32,7 +35,8 @@
     },
     "autoload-dev": {
         "psr-4" : {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "Database\\Factories\\": "database/factories/"
         }
     },
     "extra": {

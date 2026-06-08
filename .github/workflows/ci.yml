@@ -17,7 +17,7 @@ jobs:
     name: Pest (PHP ${{ matrix.php-version }})
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -31,3 +31,54 @@ jobs:
 
       - name: Run Pest with coverage
         run: vendor/bin/pest --coverage --min=100
+
+  pint:
+    runs-on: ubuntu-latest
+    name: Pint
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, exif, fileinfo
+
+      - name: Install dependencies
+        run: composer update --no-interaction --prefer-dist
+
+      - run: vendor/bin/pint --test
+
+  phpstan:
+    runs-on: ubuntu-latest
+    name: PHPStan
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, exif, fileinfo
+
+      - name: Install dependencies
+        run: composer update --no-interaction --prefer-dist
+
+      - run: vendor/bin/phpstan analyse --no-progress
+
+  rector:
+    runs-on: ubuntu-latest
+    name: Rector
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: gd, exif, fileinfo
+
+      - name: Install dependencies
+        run: composer update --no-interaction --prefer-dist
+
+      - run: vendor/bin/rector --dry-run --no-progress-bar

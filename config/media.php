@@ -39,9 +39,9 @@ return [
 
     'resources' => [
         'image' => Image::class,
-        'file' => File::class
+        'file' => File::class,
     ],
-    
+
     /*
     |--------------------------------------------------------------------------
     | Plugin Classes
@@ -79,6 +79,6 @@ return [
         // ModelDirectory::class,
 
         // PreserveOriginalResource::class,
-    ]
+    ],
 
 ];

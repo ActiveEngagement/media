@@ -8,41 +8,44 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Intervention\Image\Image;
 
-class ExifData implements Arrayable, Jsonable {
-
+/**
+ * @property-read mixed $make
+ * @property-read mixed $model
+ *
+ * @implements Arrayable<array-key, mixed>
+ */
+class ExifData implements Arrayable, Jsonable
+{
     /**
      * The EXIF data stored an array.
      *
-     * @var Collection
+     * @var Collection<array-key, mixed>
      */
     protected Collection $data;
 
     /**
      * The coordinates in the EXIF data.
-     *
-     * @var ExifCoordinates
      */
     protected ExifCoordinates $coordinates;
 
     /**
      * Creates a new instance of Exif Data.
      *
-     * @param array|Image $data
+     * @param  array<array-key, mixed>|Image|null  $data
      */
     public function __construct($data)
     {
-        if($data instanceof Image) {
+        if ($data instanceof Image) {
             $data = $data->exif();
         }
 
-        $this->data = new Collection($data);
+        $this->data = new Collection(is_array($data) ? $data : []);
     }
 
     /**
      * Magically get the property from the EXIF data.
      *
-     * @param string $key
-     * @return mixed
+     * @param  string  $key
      */
     public function __get($key): mixed
     {
@@ -52,9 +55,8 @@ class ExifData implements Arrayable, Jsonable {
     /**
      * Get the value from the EXIF data.
      *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
+     * @param  string  $key
+     * @param  mixed  $default
      */
     public function get($key, $default = null): mixed
     {
@@ -63,8 +65,6 @@ class ExifData implements Arrayable, Jsonable {
 
     /**
      * Get the EXIF coordinates.
-     *
-     * @return ExifCoordinates
      */
     public function coordinates(): ExifCoordinates
     {
@@ -75,8 +75,6 @@ class ExifData implements Arrayable, Jsonable {
 
     /**
      * Get the latitude.
-     *
-     * @return float|null
      */
     public function latitude(): ?float
     {
@@ -85,8 +83,6 @@ class ExifData implements Arrayable, Jsonable {
 
     /**
      * Get the longitude.
-     *
-     * @return float|null
      */
     public function longitude(): ?float
     {
@@ -96,7 +92,7 @@ class ExifData implements Arrayable, Jsonable {
     /**
      * Get the instance as an array.
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function toArray(): array
     {
@@ -105,11 +101,11 @@ class ExifData implements Arrayable, Jsonable {
 
     /**
      * Convert the object to its JSON representation.
-     *
-     * @return string
      */
     public function toJson($options = 0): string
     {
-        return json_encode($this->data->toArray(), $options);
+        $json = json_encode($this->data->toArray(), $options);
+
+        return $json === false ? '' : $json;
     }
 }

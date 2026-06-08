@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Actengage\Media\Contracts;
 
 use Actengage\Media\Media;
@@ -8,53 +10,48 @@ use Illuminate\Support\Collection;
 interface Plugin
 {
     /**
+     * Verify a resource against the compatible and ignored resources.
+     */
+    public function verifyResource(Resource $resource): bool;
+
+    /**
      * Initialize the plugin.
      *
-     * @param Resource $resource
      * @return void
      */
     public function initialized(Resource $resource);
-    
+
     /**
      * Runs before the `saving` event fires.
      *
-     * @param Resource $resource
      * @return void
      */
     public function beforeSaving(Resource $resource);
-    
+
     /**
      * Runs after the `saving` event fires.
      *
-     * @param Resource $resource
-     * @param Media $model
      * @return void
      */
     public function saving(Resource $resource, Media $model);
-    
+
     /**
      * Runs after the `saved` event fires.
      *
-     * @param Resource $resource
-     * @param Media $model
      * @return void
      */
     public function saved(Resource $resource, Media $model);
-    
+
     /**
      * Runs after the `storing` event fires.
      *
-     * @param Resource $resource
-     * @param Media $model
      * @return void
      */
     public function storing(Resource $resource, Media $model);
-    
+
     /**
      * Runs after the `stored` event fires.
      *
-     * @param Resource $resource
-     * @param Media $model
      * @return void
      */
     public function stored(Resource $resource, Media $model);
@@ -62,15 +59,22 @@ interface Plugin
     /**
      * Get the plugin options.
      *
-     * @return Collection
+     * @return Collection<array-key, mixed>
      */
     public function options(): Collection;
 
     /**
      * Boot the plugin.
      *
-     * @param Collection $options
+     * @param  Collection<array-key, mixed>  $options
      * @return void
      */
     public static function boot(Collection $options);
+
+    /**
+     * Create a new instance of the plugin.
+     *
+     * @param  Collection<array-key, mixed>  $options
+     */
+    public static function make(Collection $options): self;
 }

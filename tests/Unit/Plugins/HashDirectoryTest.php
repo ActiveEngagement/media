@@ -13,9 +13,9 @@ it('hashes the directory for images only', function (): void {
 
     $resource = Resource::path(__DIR__.'/../../src/image.jpeg');
 
-    expect(strlen($resource->directory))->toBe(8);
+    expect($resource->directory)->toHaveLength(8);
 
     $resource = Resource::path(__DIR__.'/../../src/file.txt');
 
-    expect(strlen($resource->directory))->toBe(0);
+    expect($resource->directory)->toBeNull();
 });

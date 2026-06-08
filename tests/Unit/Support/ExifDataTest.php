@@ -16,7 +16,7 @@ it('reads exif data from an image', function (): void {
     expect($exif->coordinates())->toBeInstanceOf(ExifCoordinates::class);
     expect($exif->latitude())->toBe(38.98211388888889);
     expect($exif->longitude())->toBe(-104.9599);
-    expect($exif->thisKeyDoesntExist)->toBeNull();
+    expect($exif->get('thisKeyDoesntExist'))->toBeNull();
 });
 
 it('returns null coordinates when no GPS data is present', function (): void {

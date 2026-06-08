@@ -7,16 +7,16 @@ use Actengage\Media\Facades\Plugin;
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\PluginFactory;
 use Actengage\Media\ResourceFactory;
-use Illuminate\Support\Facades\Storage;
 use Actengage\Media\ServiceProvider;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Storage;
 use Orchestra\Testbench\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
     /**
-    * Setup the test environment.
-    */
+     * Setup the test environment.
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -24,7 +24,7 @@ class TestCase extends BaseTestCase
         $this->loadLaravelMigrations();
 
         $this->artisan('migrate', [
-            '--database' => 'testbench'
+            '--database' => 'testbench',
         ]);
 
         Storage::fake('s3');
@@ -32,19 +32,22 @@ class TestCase extends BaseTestCase
 
         Plugin::flush();
 
-        foreach(config('media.resources') as $resource) {
+        /** @var array<int, class-string<\Actengage\Media\Resources\Resource>> $resources */
+        $resources = config('media.resources', []);
+
+        foreach ($resources as $resource) {
             $resource::flushMacros();
             $resource::flushEventListeners();
         }
 
-        $this->app->get(ResourceFactory::class)->boot();
-        $this->app->get(PluginFactory::class)->boot();
+        $this->app?->get(ResourceFactory::class)->boot();
+        $this->app?->get(PluginFactory::class)->boot();
     }
 
     /**
      * Define environment setup.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return void
      */
     protected function getEnvironmentSetUp($app)
@@ -52,16 +55,16 @@ class TestCase extends BaseTestCase
         // Setup default database to use sqlite :memory:
         $app['config']->set('database.default', 'testbench');
         $app['config']->set('database.connections.testbench', [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
     }
 
     protected function getPackageProviders($app)
     {
         return [
-            ServiceProvider::class
+            ServiceProvider::class,
         ];
     }
 
@@ -69,8 +72,7 @@ class TestCase extends BaseTestCase
     {
         return [
             'Media' => Media::class,
-            'Resource' => Resource::class
+            'Resource' => Resource::class,
         ];
     }
-
 }

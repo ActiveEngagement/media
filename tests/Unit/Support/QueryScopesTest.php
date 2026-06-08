@@ -1,106 +1,115 @@
 <?php
 
-use Actengage\Media\Facades\Resource;
 use Actengage\Media\Media;
+use Illuminate\Database\Eloquent\Builder;
 
 beforeEach(function (): void {
     foreach (['a', 'b', 'c'] as $context) {
-        Resource::make(__DIR__.'/../../src/file.txt')
-            ->disk('local')
-            ->filename("$context-1")
-            ->context($context)
-            ->caption("$context-1")
-            ->title("$context-1")
-            ->save();
+        Media::factory()->createOne([
+            'disk' => 'local',
+            'context' => $context,
+            'filename' => "$context-1.txt",
+            'caption' => "$context-1",
+            'title' => "$context-1",
+            'mime' => 'text/plain',
+            'extension' => 'txt',
+            'filesize' => 25,
+        ]);
 
-        Resource::make(__DIR__.'/../../src/index.html')
-            ->disk('public')
-            ->filename("$context-2")
-            ->context($context)
-            ->caption("$context-2")
-            ->title("$context-2")
-            ->save();
+        Media::factory()->createOne([
+            'disk' => 'public',
+            'context' => $context,
+            'filename' => "$context-2.html",
+            'caption' => "$context-2",
+            'title' => "$context-2",
+            'mime' => 'text/html',
+            'extension' => 'html',
+            'filesize' => 286,
+        ]);
     }
 });
 
-it('scopes by caption', function (): void {
-    expect(Media::caption('a-1')->count())->toBe(1);
-    expect(Media::caption('a-1', 'a-2')->count())->toBe(2);
-    expect(Media::caption(['a-1', 'a-2'])->count())->toBe(2);
-});
+it('scopes by caption', /** @param array<int, array<string>|string> $args */ function (array $args, int $expected): void {
+    expect(Media::caption(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['a-1'], 1],
+    'multiple' => [['a-1', 'a-2'], 2],
+    'array' => [[['a-1', 'a-2']], 2],
+]);
 
-it('scopes by context', function (): void {
-    expect(Media::context('a')->count())->toBe(2);
-    expect(Media::context('a', 'b')->count())->toBe(4);
-    expect(Media::context(['a', 'b'])->count())->toBe(4);
-});
+it('scopes by context', function (array $args, int $expected): void {
+    expect(Media::context(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['a'], 2],
+    'multiple' => [['a', 'b'], 4],
+    'array' => [[['a', 'b']], 4],
+]);
 
-it('scopes by disk', function (): void {
-    expect(Media::disk('local')->count())->toBe(3);
-    expect(Media::disk('local', 'public')->count())->toBe(6);
-    expect(Media::disk(['local', 'public'])->count())->toBe(6);
-});
+it('scopes by disk', function (array $args, int $expected): void {
+    expect(Media::disk(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['local'], 3],
+    'multiple' => [['local', 'public'], 6],
+    'array' => [[['local', 'public']], 6],
+]);
 
-it('scopes by extension', function (): void {
-    expect(Media::extension('txt')->count())->toBe(3);
-    expect(Media::extension('txt', 'html')->count())->toBe(6);
-    expect(Media::extension(['txt', 'html'])->count())->toBe(6);
-});
+it('scopes by extension', function (array $args, int $expected): void {
+    expect(Media::extension(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['txt'], 3],
+    'multiple' => [['txt', 'html'], 6],
+    'array' => [[['txt', 'html']], 6],
+]);
 
-it('scopes by filename', function (): void {
-    expect(Media::filename('a-1.txt')->count())->toBe(1);
-    expect(Media::filename('a-1.txt', 'a-2.html')->count())->toBe(2);
-    expect(Media::filename(['a-1.txt', 'a-2.html'])->count())->toBe(2);
-});
+it('scopes by filename', function (array $args, int $expected): void {
+    expect(Media::filename(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['a-1.txt'], 1],
+    'multiple' => [['a-1.txt', 'a-2.html'], 2],
+    'array' => [[['a-1.txt', 'a-2.html']], 2],
+]);
 
-it('scopes by filesize', function (): void {
-    expect(Media::filesize(25)->count())->toBe(3);
-    expect(Media::filesize([25, 286])->count())->toBe(6);
-});
+it('scopes by filesize', function (array $args, int $expected): void {
+    expect(Media::filesize(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [[25], 3],
+    'array' => [[[25, 286]], 6],
+]);
 
-it('scopes by mime', function (): void {
-    expect(Media::mime('text/plain')->count())->toBe(3);
-    expect(Media::mime(['text/plain', 'text/html'])->count())->toBe(6);
-});
+it('scopes by mime', function (array $args, int $expected): void {
+    expect(Media::mime(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['text/plain'], 3],
+    'array' => [[['text/plain', 'text/html']], 6],
+]);
 
-it('scopes by title', function (): void {
-    expect(Media::title('a-1')->count())->toBe(1);
-    expect(Media::title('a-1', 'a-2')->count())->toBe(2);
-    expect(Media::title(['a-1', 'a-2'])->count())->toBe(2);
-});
+it('scopes by title', function (array $args, int $expected): void {
+    expect(Media::title(...$args)->count())->toBe($expected);
+})->with([
+    'single' => [['a-1'], 1],
+    'multiple' => [['a-1', 'a-2'], 2],
+    'array' => [[['a-1', 'a-2']], 2],
+]);
 
 it('scopes by meta', function (): void {
-    expect(Media::meta(['width' => 10]))
-        ->toBeInstanceOf(\Illuminate\Database\Eloquent\Builder::class);
+    expect(Media::meta(['width' => 10]))->toBeInstanceOf(Builder::class);
 });
 
-it('scopes by tags', function (): void {
-    Resource::make(__DIR__.'/../../src/file.txt')
-        ->filename('tagged-1')
-        ->tags(['red', 'green'])
-        ->save();
+it('scopes by tags', function (array $args, int $expected): void {
+    Media::factory()->createOne(['filename' => 'tagged-1.txt', 'tags' => ['red', 'green']]);
+    Media::factory()->createOne(['filename' => 'tagged-2.txt', 'tags' => ['blue']]);
 
-    Resource::make(__DIR__.'/../../src/file.txt')
-        ->filename('tagged-2')
-        ->tags(['blue'])
-        ->save();
-
-    expect(Media::tag('red')->count())->toBe(1);
-    expect(Media::tags('red', 'blue')->count())->toBe(2);
-    expect(Media::tags(['green'])->count())->toBe(1);
-});
+    expect(Media::tag(...$args)->count())->toBe($expected);
+})->with([
+    'single tag' => [['red'], 1],
+    'multiple tags' => [['red', 'blue'], 2],
+    'array of tags' => [[['green']], 1],
+]);
 
 it('scopes without tags', function (): void {
-    Resource::make(__DIR__.'/../../src/file.txt')
-        ->filename('tagged-1')
-        ->tags(['red', 'green'])
-        ->save();
+    Media::factory()->createOne(['filename' => 'tagged-1.txt', 'tags' => ['red', 'green']]);
+    Media::factory()->createOne(['filename' => 'tagged-2.txt', 'tags' => ['blue']]);
 
-    Resource::make(__DIR__.'/../../src/file.txt')
-        ->filename('tagged-2')
-        ->tags(['blue'])
-        ->save();
-
-    expect(Media::withoutTag('red')->pluck('filename'))->not->toContain('tagged-1');
-    expect(Media::withoutTags(['red', 'green'])->pluck('filename'))->not->toContain('tagged-1');
+    expect(Media::withoutTag('red')->pluck('filename'))->not->toContain('tagged-1.txt');
+    expect(Media::withoutTags(['red', 'green'])->pluck('filename'))->not->toContain('tagged-1.txt');
 });

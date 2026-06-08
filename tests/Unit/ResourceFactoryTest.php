@@ -8,7 +8,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 
 it('configures the factory', function (): void {
-    Resource::configure(Config::get('media.resources'));
+    Resource::configure(Config::array('media.resources'));
 
     expect(Resource::resource('image'))->toBe(Image::class);
     expect(Resource::resource('file'))->toBe(File::class);

@@ -9,7 +9,9 @@ it('returns true when firing an event without a dispatcher', function (): void {
 });
 
 it('returns early when flushing listeners without a dispatcher', function (): void {
-    expect(EventfulStub::flushEventListeners())->toBeNull();
+    EventfulStub::flushEventListeners();
+
+    expect(EventfulStub::getEventDispatcher())->toBeNull();
 });
 
 it('does nothing when registering an event without a dispatcher', function (): void {

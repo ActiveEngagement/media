@@ -100,8 +100,8 @@ it('sets and persists database attributes', function (): void {
     expect($resource->context)->toBe($context);
     expect($resource->caption)->toBe($caption);
     expect($resource->title)->toBe($title);
-    expect($resource->tags->all())->toBe(['a', 'b', 'c', 'd']);
-    expect($resource->meta->all())->toBe(['a' => 1, 'b' => 2, 'c' => 3]);
+    expect($resource->tags?->all())->toBe(['a', 'b', 'c', 'd']);
+    expect($resource->meta?->all())->toBe(['a' => 1, 'b' => 2, 'c' => 3]);
 
     $model = $resource->save();
 
@@ -165,7 +165,7 @@ it('associates a parent model', function (): void {
         ->save();
 
     expect($parent->parent)->toBeNull();
-    expect($child->parent->is($parent))->toBeTrue();
+    expect($child->parent?->is($parent))->toBeTrue();
     expect($parent->children)->toHaveCount(1);
 });
 
@@ -186,13 +186,13 @@ it('sets the tagging storage option from tags', function (): void {
     $resource = Resource::path(__DIR__.'/../../src/file.txt')
         ->tags(['a', 'b', 'c']);
 
-    expect($resource->storageOptions->get('Tagging'))->toBe('a=true&b=true&c=true');
+    expect($resource->storageOptions?->get('Tagging'))->toBe('a=true&b=true&c=true');
 });
 
 it('registers an observable event via an instance call', function (): void {
     Event::fake();
 
-    $resource = Resource::path(__DIR__.'/../../src/file.txt');
+    $resource = Image::make(__DIR__.'/../../src/image.jpeg');
 
     expect($resource->saving(function (): void {
         //

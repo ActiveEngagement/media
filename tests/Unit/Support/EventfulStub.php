@@ -3,12 +3,13 @@
 namespace Tests\Unit\Support;
 
 use Actengage\Media\Support\HasEvents;
+use Closure;
 
 /**
  * A bare class using the HasEvents trait with no dispatcher configured, used to
  * exercise the trait's "missing dispatcher" guards.
  */
-class EventfulStub
+final class EventfulStub
 {
     use HasEvents;
 
@@ -17,8 +18,8 @@ class EventfulStub
         return $this->fireEvent($event);
     }
 
-    public static function triggerRegister(string $event, callable $callback): void
+    public static function triggerRegister(string $event, Closure $callback): void
     {
-        static::registerEvent($event, $callback);
+        self::registerEvent($event, $callback);
     }
 }

@@ -1,0 +1,11 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - src/
+    level: max
+    ignoreErrors:
+        -
+            identifier: trait.unused
+            path: src/Mediable.php

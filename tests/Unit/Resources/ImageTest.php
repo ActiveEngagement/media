@@ -6,8 +6,10 @@ use Actengage\Media\Media;
 use Actengage\Media\Resources\Image;
 use Actengage\Media\Support\ExifCoordinates;
 use Actengage\Media\Support\ExifData;
+use ColorThief\Color;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Psr\Http\Message\StreamInterface;
 use Tests\Unit\Support\DummyFilesystem;
 
 it('creates and stores an image resource', function (): void {
@@ -15,12 +17,11 @@ it('creates and stores an image resource', function (): void {
         __DIR__.'/../../src/image.jpeg', 'image.jpeg'
     );
 
-    $resource = Resource::make($file)
-        ->disk('public')
-        ->directory('images');
+    $resource = Image::make($file);
+    $resource->disk('public')->directory('images');
 
     expect($resource)->toBeInstanceOf(Image::class);
-    expect($resource->image())->toBeInstanceOf(\Intervention\Image\Image::class);
+    expect($resource->image())->toBeInstanceOf(Intervention\Image\Image::class);
     expect($resource->filesize)->toBe(2933093);
     expect($resource->mime)->toBe('image/jpeg');
     expect($resource->extension)->toBe('jpeg');
@@ -78,23 +79,23 @@ it('extracts the extension and filename from a stream', function (): void {
 it('returns a stream of the image data', function (): void {
     $resource = Resource::path(__DIR__.'/../../src/image.jpeg');
 
-    expect($resource->stream())->toBeInstanceOf(\Psr\Http\Message\StreamInterface::class);
+    expect($resource->stream())->toBeInstanceOf(StreamInterface::class);
 });
 
 it('returns the core image resource', function (): void {
-    $resource = Resource::path(__DIR__.'/../../src/image.jpeg');
+    $resource = Image::make(__DIR__.'/../../src/image.jpeg');
 
     expect($resource->core())->not->toBeNull();
 });
 
 it('gets the dominant color of the image', function (): void {
-    $resource = Resource::path(__DIR__.'/../../src/image.jpeg');
+    $resource = Image::make(__DIR__.'/../../src/image.jpeg');
 
-    expect($resource->color(10))->toBeInstanceOf(\ColorThief\Color::class);
+    expect($resource->color(10))->toBeInstanceOf(Color::class);
 });
 
 it('sets the exif data fluently', function (): void {
-    $resource = Resource::path(__DIR__.'/../../src/image.jpeg');
+    $resource = Image::make(__DIR__.'/../../src/image.jpeg');
 
     $exif = new ExifData(['Make' => 'Custom']);
 

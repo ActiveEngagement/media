@@ -2,10 +2,9 @@
 
 namespace Actengage\Media;
 
-use Actengage\Media\Resources\Image;
 use Actengage\Media\Resources\Resource;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 class ServiceProvider extends BaseServiceProvider
@@ -21,16 +20,12 @@ class ServiceProvider extends BaseServiceProvider
             __DIR__.'/../config/media.php', 'media'
         );
 
-        $this->app->singleton(PluginFactory::class, function($app) {
-            return new PluginFactory($app);
-        });
+        $this->app->singleton(PluginFactory::class, fn () => new PluginFactory);
 
-        $this->app->singleton(ResourceFactory::class, function($app) {
-            return new ResourceFactory($app);
-        });
-        
-        $this->app->bind(Media::class, function($app, $args) {
-            $class = Config::get('media.model');
+        $this->app->singleton(ResourceFactory::class, fn () => new ResourceFactory);
+
+        $this->app->bind(Media::class, function ($app, $args) {
+            $class = Config::string('media.model');
 
             return new $class($args);
         });
@@ -46,18 +41,18 @@ class ServiceProvider extends BaseServiceProvider
         $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
 
         $this->publishes([
-            __DIR__.'/../config/media.php' => config_path('media.php')
+            __DIR__.'/../config/media.php' => config_path('media.php'),
         ], 'media-config');
-        
+
         $this->publishes([
-            __DIR__.'/../database/migrations' => database_path('migrations')
+            __DIR__.'/../database/migrations' => database_path('migrations'),
         ], 'media-migrations');
-        
+
         $this->publishes([
-            __DIR__.'/../database/legacy' => database_path('migrations')
+            __DIR__.'/../database/legacy' => database_path('migrations'),
         ], 'media-migrations-legacy');
 
-        Resource::setEventDispatcher($this->app['events']);
+        Resource::setEventDispatcher($this->app->make(Dispatcher::class));
 
         $this->app->get(ResourceFactory::class)->boot();
         $this->app->get(PluginFactory::class)->boot();

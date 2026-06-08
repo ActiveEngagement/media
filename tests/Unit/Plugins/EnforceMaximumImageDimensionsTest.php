@@ -4,6 +4,7 @@ use Actengage\Media\Facades\Plugin;
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\Media;
 use Actengage\Media\Plugins\EnforceMaximumImageDimensions;
+use Actengage\Media\Resources\Image;
 use Illuminate\Http\UploadedFile;
 
 it('enforces maximum image dimensions', function (): void {
@@ -18,7 +19,7 @@ it('enforces maximum image dimensions', function (): void {
         __DIR__.'/../../src/image.jpeg', 'image.jpeg'
     );
 
-    $resource = Resource::make($file);
+    $resource = Image::make($file);
 
     expect($resource->image()->width())->toBe(100);
     expect($resource->image()->height())->toBe(75);
@@ -38,7 +39,7 @@ it('upsizes when the upsize option is enabled', function (): void {
         __DIR__.'/../../src/image.jpeg', 'image.jpeg'
     );
 
-    $resource = Resource::make($file);
+    $resource = Image::make($file);
 
     expect($resource->image()->width())->toBe(100);
     expect($resource->image()->height())->toBe(100);

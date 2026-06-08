@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Actengage\Media\Plugins;
 
 use Actengage\Media\Contracts\Resource;
@@ -7,22 +9,23 @@ use Illuminate\Support\Str;
 
 /**
  * Hashes the resource filename using the sha1 algorithm.
- * 
+ *
  * Available Options:
- * 
- * @var mixed $length The length of the hash. Defaults to 8.
+ *
+ * - `length`: The length of the hash. Defaults to 8.
  */
 class HashFilename extends Plugin
 {
     /**
      * Fires after the resource has been initialized.
      *
-     * @param Resource $resource
      * @return void
      */
     public function initialized(Resource $resource)
     {
-        $length = (int) max(6, min($this->options->get('length', 8), 40));
+        $option = $this->options->get('length', 8);
+
+        $length = max(6, min(is_numeric($option) ? (int) $option : 8, 40));
 
         $resource->filename(
             substr(sha1(microtime().Str::random(8)), 0, $length)

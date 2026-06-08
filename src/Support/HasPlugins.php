@@ -2,7 +2,9 @@
 
 namespace Actengage\Media\Support;
 
+use Actengage\Media\Contracts\Plugin as PluginContract;
 use Actengage\Media\Facades\Plugin;
+use Actengage\Media\Plugins\PluginConfig;
 use Illuminate\Support\Collection;
 
 trait HasPlugins
@@ -10,22 +12,20 @@ trait HasPlugins
     /**
      * The resource plugin instances.
      *
-     * @var Collection
+     * @var Collection<int, PluginContract>
      */
     protected Collection $plugins;
 
     /**
      * Resolve the plugin instance method.
      *
-     * @param string $method
-     * @param mixed ...$args
-     * @return void
+     * @param  mixed  ...$args
      */
     public function resolvePluginMethod(string $method, ...$args): self
     {
-        $this->plugins->filter->verifyResource($this)->map->$method(
-            $this, ...$args
-        );
+        $this->plugins
+            ->filter(fn (PluginContract $plugin) => $plugin->verifyResource($this))
+            ->each(fn (PluginContract $plugin) => $plugin->{$method}($this, ...$args));
 
         return $this;
     }
@@ -33,7 +33,7 @@ trait HasPlugins
     /**
      * Get the registered plugins.
      *
-     * @return Collection
+     * @return Collection<int, PluginContract>
      */
     public function plugins(): Collection
     {
@@ -43,26 +43,26 @@ trait HasPlugins
     /**
      * Register plugins for the resource.
      *
-     * @param array $plugins
-     * @return Collection
+     * @param  array<array-key, mixed>  $plugins
+     * @return Collection<string, Collection<int, PluginConfig>>
      */
     public static function register(array $plugins): Collection
     {
         return Plugin::register([
-            static::class => $plugins
+            static::class => $plugins,
         ]);
     }
 
     /**
      * Unregister plugins for the resource.
      *
-     * @param array $plugins
-     * @return Collection
+     * @param  array<array-key, mixed>  $plugins
+     * @return Collection<string, Collection<int, PluginConfig>>
      */
     public static function unregister(array $plugins): Collection
     {
         return Plugin::unregister([
-            static::class => $plugins
+            static::class => $plugins,
         ]);
     }
 }

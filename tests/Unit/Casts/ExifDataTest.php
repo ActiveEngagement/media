@@ -9,6 +9,6 @@ it('casts exif data when persisting to the database', function (): void {
     $model->exif = new ExifData(['Make' => 'TestMake']);
     $model->save();
 
-    expect($model->fresh()->exif)->toBeInstanceOf(ExifData::class);
-    expect($model->fresh()->exif->make)->toBe('TestMake');
+    expect($model->refresh()->exif)->toBeInstanceOf(ExifData::class);
+    expect($model->refresh()->exif->make)->toBe('TestMake');
 });

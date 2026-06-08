@@ -13,9 +13,9 @@ it('hashes the filename for images only', function (): void {
 
     $resource = Resource::path(__DIR__.'/../../src/image.jpeg');
 
-    expect(strlen($resource->filename))->toBe(13);
+    expect($resource->filename)->toHaveLength(13);
 
     $resource = Resource::path(__DIR__.'/../../src/file.txt');
 
-    expect(strlen($resource->filename))->toBe(8);
+    expect($resource->filename)->toHaveLength(8);
 });

@@ -7,11 +7,12 @@ use Actengage\Media\Resources\Image;
 use Illuminate\Support\Collection;
 
 it('exposes its options', function (): void {
-    $options = new Collection(['length' => 8]);
+    $options = new Collection;
+    $options->put('length', 8);
 
     $plugin = new class($options) extends Plugin {};
 
-    expect($plugin->options())->toBe($options);
+    expect($plugin->options()->all())->toBe(['length' => 8]);
 });
 
 it('verifies a resource against compatible resources', function (): void {

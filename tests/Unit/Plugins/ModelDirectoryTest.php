@@ -6,42 +6,20 @@ use Actengage\Media\Plugins\ModelDirectory;
 use Actengage\Media\Resources\Image;
 use Tests\Unit\Plugins\PrimaryKeyExtractor;
 
-it('stores the image in a directory matching the model key', function (): void {
-    Image::register([
-        ModelDirectory::class,
-    ]);
+it('stores the image in a directory resolved from the model key', function (array|string $plugin): void {
+    Image::register([$plugin]);
 
     $model = Resource::path(__DIR__.'/../../src/image.jpeg')->save();
 
     expect($model->directory)->toBe('1');
-});
-
-it('uses a string extractor class to resolve the directory', function (): void {
-    Image::register([
-        [ModelDirectory::class, [
-            'extractor' => PrimaryKeyExtractor::class,
-        ]],
-    ]);
-
-    $model = Resource::path(__DIR__.'/../../src/image.jpeg')->save();
-
-    expect($model->directory)->toBe('1');
-});
-
-it('uses an invokable extractor instance to resolve the directory', function (): void {
-    Image::register([
-        [ModelDirectory::class, [
-            'extractor' => new class
-            {
-                public function __invoke(Media $model)
-                {
-                    return $model->getKey();
-                }
-            },
-        ]],
-    ]);
-
-    $model = Resource::path(__DIR__.'/../../src/image.jpeg')->save();
-
-    expect($model->directory)->toBe('1');
-});
+})->with([
+    'default key' => fn (): string => ModelDirectory::class,
+    'string extractor' => fn (): array => [ModelDirectory::class, ['extractor' => PrimaryKeyExtractor::class]],
+    'invokable extractor' => fn (): array => [ModelDirectory::class, ['extractor' => new class
+    {
+        public function __invoke(Media $model): int
+        {
+            return $model->id;
+        }
+    }]],
+]);

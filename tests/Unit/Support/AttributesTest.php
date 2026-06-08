@@ -12,7 +12,7 @@ it('gets an attribute fluently', function (): void {
 it('sets an attribute fluently', function (): void {
     $resource = Resource::path(__DIR__.'/../../src/file.txt');
 
-    expect($resource->attribute('caption', 'A caption')->caption)->toBe('A caption');
+    expect($resource->setAttribute('caption', 'A caption')->caption)->toBe('A caption');
 });
 
 it('throws when getting an unknown attribute', function (): void {

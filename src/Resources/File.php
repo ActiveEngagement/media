@@ -13,8 +13,6 @@ class File extends Resource
 {
     /**
      * The data stream.
-     *
-     * @var Stream
      */
     protected Stream $stream;
 
@@ -31,8 +29,7 @@ class File extends Resource
             $this->filename = $this->stream->filename();
             $this->filesize = $this->stream->getSize();
             $this->mime = $this->stream->mime();
-        }
-        catch(NotReadableException $e) {
+        } catch (NotReadableException $e) {
             throw new InvalidResourceException(
                 $e->getMessage(), $e->getCode(), $e
             );
@@ -41,9 +38,6 @@ class File extends Resource
 
     /**
      * Store the resource on the disk.
-     *
-     * @param Media $model
-     * @return boolean
      */
     public function store(Media $model): bool
     {
@@ -54,8 +48,6 @@ class File extends Resource
 
     /**
      * Get the stream instance.
-     *
-     * @return StreamInterface
      */
     public function stream(): StreamInterface
     {

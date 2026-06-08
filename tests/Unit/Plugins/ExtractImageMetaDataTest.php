@@ -1,8 +1,8 @@
 <?php
 
 use Actengage\Media\Facades\Plugin;
-use Actengage\Media\Facades\Resource;
 use Actengage\Media\Plugins\ExtractImageMetaData;
+use Actengage\Media\Resources\Image;
 use Illuminate\Http\UploadedFile;
 
 it('extracts the image width and height into the meta data', function (): void {
@@ -14,7 +14,7 @@ it('extracts the image width and height into the meta data', function (): void {
         __DIR__.'/../../src/image.jpeg', 'image.jpeg'
     );
 
-    $model = Resource::make($file)
+    $model = Image::make($file)
         ->resize(10, 10)
         ->save();
 

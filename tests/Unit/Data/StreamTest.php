@@ -1,60 +1,54 @@
 <?php
 
-namespace Tests\Unit\Data;
-
 use Actengage\Media\Data\Stream;
 use Illuminate\Http\UploadedFile;
-use Tests\TestCase;
 
-class StreamTest extends TestCase
-{
-    public function testSavingFileFromResource()
-    {
-        $file = Stream::make(fopen(__DIR__.'/../../src/file.txt', 'r+'));
-        
-        $this->assertEquals(25, $file->getSize());
-        $this->assertEquals('txt', $file->extension());
-        $this->assertEquals('file.txt', $file->filename());
-        $this->assertEquals('text/plain', $file->mime());
-        $this->assertEquals('This is some sample text.', $file->getContents());
-    }
+it('creates a stream from a resource', function (): void {
+    $file = Stream::make(fopen(__DIR__.'/../../src/file.txt', 'r+'));
 
-    public function testSavingFileFromPath()
-    {
-        $file = Stream::make(__DIR__.'/../../src/file.txt');
-        
-        $this->assertEquals(25, $file->getSize());
-        $this->assertEquals('txt', $file->extension());
-        $this->assertEquals('file.txt', $file->filename());
-        $this->assertEquals('text/plain', $file->mime());
-        $this->assertEquals('This is some sample text.', $file->getContents());
-    }
+    expect($file->getSize())->toBe(25);
+    expect($file->extension())->toBe('txt');
+    expect($file->filename())->toBe('file.txt');
+    expect($file->mime())->toBe('text/plain');
+    expect($file->getContents())->toBe('This is some sample text.');
+});
 
-    public function testSavingFileFromSplFileInfo()
-    {
-        $file = Stream::make(
-            new UploadedFile(__DIR__.'/../../src/file.txt', 'file.text')
-        );
-        
-        $this->assertEquals(25, $file->getSize());
-        $this->assertEquals('txt', $file->extension());
-        $this->assertEquals('file.txt', $file->filename());
-        $this->assertEquals('text/plain', $file->mime());
-        $this->assertEquals('This is some sample text.', $file->getContents());
-    }
+it('creates a stream from a path', function (): void {
+    $file = Stream::make(__DIR__.'/../../src/file.txt');
 
-    public function testSavingFileFromString()
-    {
-        $file = Stream::make('This is some sample text.', [
-            'metadata' => [
-                'filename' => 'file.txt'
-            ]
-        ]);
-        
-        $this->assertEquals(25, $file->getSize());
-        $this->assertEquals('txt', $file->extension());
-        $this->assertEquals('file.txt', $file->filename());
-        $this->assertEquals('text/plain', $file->mime());
-        $this->assertEquals('This is some sample text.', $file->getContents());
-    }
-}
+    expect($file->getSize())->toBe(25);
+    expect($file->extension())->toBe('txt');
+    expect($file->filename())->toBe('file.txt');
+    expect($file->mime())->toBe('text/plain');
+    expect($file->getContents())->toBe('This is some sample text.');
+});
+
+it('creates a stream from a SplFileInfo', function (): void {
+    $file = Stream::make(
+        new UploadedFile(__DIR__.'/../../src/file.txt', 'file.text')
+    );
+
+    expect($file->getSize())->toBe(25);
+    expect($file->extension())->toBe('txt');
+    expect($file->filename())->toBe('file.txt');
+    expect($file->mime())->toBe('text/plain');
+    expect($file->getContents())->toBe('This is some sample text.');
+});
+
+it('creates a stream from a string', function (): void {
+    $file = Stream::make('This is some sample text.', [
+        'metadata' => [
+            'filename' => 'file.txt',
+        ],
+    ]);
+
+    expect($file->getSize())->toBe(25);
+    expect($file->extension())->toBe('txt');
+    expect($file->filename())->toBe('file.txt');
+    expect($file->mime())->toBe('text/plain');
+    expect($file->getContents())->toBe('This is some sample text.');
+});
+
+it('throws a NotReadableException for invalid data', function (): void {
+    Stream::make(null);
+})->throws(\Actengage\Media\Exceptions\NotReadableException::class, 'Cannot create stream using invalid data.');

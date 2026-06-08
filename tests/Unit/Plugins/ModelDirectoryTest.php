@@ -1,54 +1,47 @@
 <?php
 
-namespace Tests\Unit\Plugins;
-
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\Media;
 use Actengage\Media\Plugins\ModelDirectory;
 use Actengage\Media\Resources\Image;
-use Tests\TestCase;
+use Tests\Unit\Plugins\PrimaryKeyExtractor;
 
-class ModelDirectoryTest extends TestCase
-{
-    public function testModelDirectory()
-    {
-        Image::register([
-            ModelDirectory::class
-        ]);
+it('stores the image in a directory matching the model key', function (): void {
+    Image::register([
+        ModelDirectory::class,
+    ]);
 
-        $model = Resource::path(__DIR__.'/../../src/image.jpeg')->save();
-        
-        $this->assertEquals(1, $model->directory);
-    }
+    $model = Resource::path(__DIR__.'/../../src/image.jpeg')->save();
 
-    public function testModelDirectoryUsingExtractor()
-    {
-        Image::register([
-            [ModelDirectory::class, [
-                'extractor' => PrimaryKeyExtractor::class
-            ]]
-        ]);
+    expect($model->directory)->toBe('1');
+});
 
-        $model = Resource::path(__DIR__.'/../../src/image.jpeg')->save();
-        
-        $this->assertEquals(1, $model->directory);
-    }
+it('uses a string extractor class to resolve the directory', function (): void {
+    Image::register([
+        [ModelDirectory::class, [
+            'extractor' => PrimaryKeyExtractor::class,
+        ]],
+    ]);
 
-    public function testModelDirectoryUsingExtractorInstance()
-    {
-        Image::register([
-            [ModelDirectory::class, [
-                'extractor' => new class {
-                    public function __invoke(Media $model)
-                    {
-                        return $model->getKey();
-                    }
+    $model = Resource::path(__DIR__.'/../../src/image.jpeg')->save();
+
+    expect($model->directory)->toBe('1');
+});
+
+it('uses an invokable extractor instance to resolve the directory', function (): void {
+    Image::register([
+        [ModelDirectory::class, [
+            'extractor' => new class
+            {
+                public function __invoke(Media $model)
+                {
+                    return $model->getKey();
                 }
-            ]]
-        ]);
+            },
+        ]],
+    ]);
 
-        $model = Resource::path(__DIR__.'/../../src/image.jpeg')->save();
-        
-        $this->assertEquals(1, $model->directory);
-    }
-}
+    $model = Resource::path(__DIR__.'/../../src/image.jpeg')->save();
+
+    expect($model->directory)->toBe('1');
+});

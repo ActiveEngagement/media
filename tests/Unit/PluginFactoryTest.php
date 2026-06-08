@@ -1,103 +1,112 @@
 <?php
 
-namespace Tests\Unit;
-
 use Actengage\Media\Facades\Plugin;
 use Actengage\Media\Facades\Resource;
 use Actengage\Media\Plugins\ExtractImageColors;
 use Actengage\Media\Plugins\HashDirectory;
 use Actengage\Media\Plugins\HashFilename;
 use Actengage\Media\Plugins\PreserveOriginalResource;
-use Tests\TestCase;
 
-class PluginFactoryTest extends TestCase
-{
-    public function testMergingAndRemovingConfigurations()
-    {
-        Plugin::register([
-            PreserveOriginalResource::class,
-            [HashDirectory::class, [
-                'length' => 8
+it('merges and removes configurations', function (): void {
+    Plugin::register([
+        PreserveOriginalResource::class,
+        [HashDirectory::class, [
+            'length' => 8,
+        ]],
+        'image' => [
+            [ExtractImageColors::class, [
+                'colorCount' => 3,
             ]],
-            'image' => [
-                [ExtractImageColors::class, [
-                    'colorCount' => 3
-                ]],
-                [HashFilename::class, [
-                    'length' => 8
-                ]]
-            ],
-            'file' => [
-                [HashFilename::class, [
-                    'length' => 8
-                ]]
-            ]
-        ]);
-
-        $this->assertCount(4, Resource::make(__DIR__.'/../src/image.jpeg')->plugins());
-        $this->assertCount(3, Resource::make(__DIR__.'/../src/file.txt')->plugins());
-
-        Plugin::unregister([
-            [HashDirectory::class, [
-                'length' => 8
-            ]],
-            'file' => [
-                [HashFilename::class, [
-                    'length' => 8
-                ]]
-            ],
-            'image' => [
-                [HashFilename::class, [
-                    'length' => 8
-                ]]
-            ]
-        ]);
-
-        $this->assertCount(2, Resource::make(__DIR__.'/../src/image.jpeg')->plugins());
-        $this->assertCount(1, Resource::make(__DIR__.'/../src/file.txt')->plugins());
-    }
-
-    public function testMergingGroupConfiguration()
-    {
-        $this->assertCount(0, Plugin::config());
-
-        Plugin::registerGroup('image', [
             [HashFilename::class, [
-                'length' => 8
-            ]]
-        ]);
-
-        Plugin::registerGroup('file', [
-            [HashFilename::class, [
-                'length' => 8
-            ]]
-        ]);
-
-        $this->assertCount(2, Plugin::config());
-    }
-
-    public function testRemovingGroupConfigurations()
-    {
-        Plugin::register([
-            [HashDirectory::class, [
-                'length' => 8
+                'length' => 8,
             ]],
-            'image' => [
-                [HashFilename::class, [
-                    'length' => 8
-                ]]
-            ],
-            'file' => [
-                [HashFilename::class, [
-                    'length' => 8
-                ]]
-            ]
-        ]);
+        ],
+        'file' => [
+            [HashFilename::class, [
+                'length' => 8,
+            ]],
+        ],
+    ]);
 
-        $this->assertCount(3, Plugin::config());
+    expect(Resource::make(__DIR__.'/../src/image.jpeg')->plugins())->toHaveCount(4);
+    expect(Resource::make(__DIR__.'/../src/file.txt')->plugins())->toHaveCount(3);
 
-        Plugin::unregisterGroup(['image', 'file']);
+    Plugin::unregister([
+        [HashDirectory::class, [
+            'length' => 8,
+        ]],
+        'file' => [
+            [HashFilename::class, [
+                'length' => 8,
+            ]],
+        ],
+        'image' => [
+            [HashFilename::class, [
+                'length' => 8,
+            ]],
+        ],
+    ]);
 
-        $this->assertCount(1, Plugin::config());
-    }
-}
+    expect(Resource::make(__DIR__.'/../src/image.jpeg')->plugins())->toHaveCount(2);
+    expect(Resource::make(__DIR__.'/../src/file.txt')->plugins())->toHaveCount(1);
+});
+
+it('merges group configuration', function (): void {
+    expect(Plugin::config())->toHaveCount(0);
+
+    Plugin::registerGroup('image', [
+        [HashFilename::class, [
+            'length' => 8,
+        ]],
+    ]);
+
+    Plugin::registerGroup('file', [
+        [HashFilename::class, [
+            'length' => 8,
+        ]],
+    ]);
+
+    expect(Plugin::config())->toHaveCount(2);
+});
+
+it('removes group configurations', function (): void {
+    Plugin::register([
+        [HashDirectory::class, [
+            'length' => 8,
+        ]],
+        'image' => [
+            [HashFilename::class, [
+                'length' => 8,
+            ]],
+        ],
+        'file' => [
+            [HashFilename::class, [
+                'length' => 8,
+            ]],
+        ],
+    ]);
+
+    expect(Plugin::config())->toHaveCount(3);
+
+    Plugin::unregisterGroup(['image', 'file']);
+
+    expect(Plugin::config())->toHaveCount(1);
+});
+
+it('keeps plugins when unregistering a group that has no matching subjects', function (): void {
+    Plugin::register([
+        [HashDirectory::class, [
+            'length' => 8,
+        ]],
+    ]);
+
+    Plugin::unregister([
+        'image' => [
+            [HashFilename::class, [
+                'length' => 8,
+            ]],
+        ],
+    ]);
+
+    expect(Plugin::config()->get('global'))->toHaveCount(1);
+});

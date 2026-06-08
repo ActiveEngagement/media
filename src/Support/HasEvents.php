@@ -10,9 +10,9 @@ trait HasEvents
     /**
      * The event dispatcher instance.
      *
-     * @var Dispatcher
+     * @var Dispatcher|null
      */
-    protected static Dispatcher $dispatcher;
+    protected static ?Dispatcher $dispatcher = null;
 
     /**
      * The event map for the model.
@@ -32,23 +32,6 @@ trait HasEvents
      */
     protected array $observables = [];
     
-    /**
-     * Filter the event results.
-     *
-     * @param  mixed  $result
-     * @return mixed
-     */
-    protected function filterEventResults($result)
-    {
-        if(is_array($result)) {
-            $result = array_filter($result, function ($response) {
-                return ! is_null($response);
-            });
-        }
-
-        return $result;
-    }
-
     /**
      * Fire a custom model event for the given event.
      *
@@ -84,13 +67,7 @@ trait HasEvents
             return true;
         }
 
-        $result = $this->filterEventResults(
-            $this->fireCustomEvent($event)
-        );
-
-        if($result === false) {
-            return false;
-        }
+        $this->fireCustomEvent($event);
 
         return static::$dispatcher->dispatch(
             static::dispatchEventName($event), [$this, ...$args]
